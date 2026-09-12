@@ -23,17 +23,20 @@ jobs:
         env:
           WP_URL: https://productos3d.cl/admin
 
-      - name: Subir dist/ por FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          port: 21
-          local-dir: ./dist/
-          server-dir: /
-          exclude: |
-            admin/**
-            **/.git*
-            **/.htaccess
+      - name: Subir dist/ por FTP (lftp)
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USERNAME }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          sudo apt-get install -y lftp
+          lftp <<EOF
+          set cmd:fail-exit yes
+          set ftp:ssl-allow yes
+          set ssl:verify-certificate no
+          set ftp:fix-pasv-address yes
+          set net:max-retries 3
+          open -u "$FTP_USER","$FTP_PASS" "$FTP_HOST"
+          mirror -R --verbose --exclude admin/ ./dist /
+          bye
+          EOF
