@@ -1,7 +1,7 @@
 ---
 /**
- * Slider principal: una slide por categoría. Autoplay, flechas, dots, swipe táctil,
- * teclado y pausa al pasar el mouse. Sin librerías.
+ * Slider principal: una slide por categoría con fondo fotográfico (public/slider/*.webp).
+ * Autoplay, flechas, dots, swipe táctil, teclado y pausa al pasar el mouse. Sin librerías.
  */
 import Icon from '@/components/Icon.astro';
 import { getCategories, getCategoryCounts, getProductsByCategory } from '@/lib/catalog';
@@ -14,7 +14,7 @@ const slides = await Promise.all(
   categories.map(async (c) => {
     const prods = await getProductsByCategory(c.slug);
     const min = Math.min(...prods.map((p) => p.price));
-    return { ...c, count: counts[c.slug] ?? 0, from: isFinite(min) ? min : 0, sample: prods.slice(0, 3) };
+    return { ...c, count: counts[c.slug] ?? 0, from: isFinite(min) ? min : 0 };
   })
 );
 
@@ -26,6 +26,17 @@ const headlines: Record<string, string> = {
   decoracion: 'Diseño impreso para tu espacio',
   personalizados: '¿Lo imaginas? Lo imprimimos',
 };
+
+/** Fondos fotográficos por categoría (1920×1080 WebP en public/slider/). */
+const backgrounds: Record<string, string> = {
+  llaveros: '/slider/llaveros-corporativo.webp',
+  'soportes-celular': '/slider/soportes-celular.webp',
+  anime: '/slider/anime.webp',
+  dibujos: '/slider/dibujos.webp',
+  decoracion: '/slider/decoracion.webp',
+  personalizados: '/slider/personalizados.webp',
+};
+const fallbackBg = '/slider/personalizados.webp';
 ---
 
 <section class="hero" id="hero" aria-roledescription="carrusel" aria-label="Categorías destacadas">
@@ -40,7 +51,19 @@ const headlines: Record<string, string> = {
           aria-label={`${i + 1} de ${slides.length}: ${s.name}`}
           aria-hidden={i !== 0 ? 'true' : 'false'}
         >
-          <div class="slide-bg" />
+          <div class="slide-bg" aria-hidden="true">
+            <img
+              class="slide-img"
+              src={backgrounds[s.slug] ?? fallbackBg}
+              alt=""
+              width="1920"
+              height="1080"
+              loading={i === 0 ? 'eager' : 'lazy'}
+              fetchpriority={i === 0 ? 'high' : 'low'}
+              decoding="async"
+            />
+            <div class="slide-shade" />
+          </div>
           <div class="container slide-inner">
             <div class="slide-copy">
               <span class="slide-kicker">
@@ -56,22 +79,6 @@ const headlines: Record<string, string> = {
                   desde <b>{formatCLP(s.from)}</b>
                 </span>
               </div>
-            </div>
-
-            <div class="slide-art" aria-hidden="true">
-              <div class="art-orb" />
-              <div class="art-cube">
-                <Icon name={s.icon} size={110} stroke={1.4} />
-              </div>
-              <ul class="art-list">
-                {s.sample.map((p) => (
-                  <li>
-                    <span class="dot" />
-                    <span>{p.name}</span>
-                    <b>{formatCLP(p.price)}</b>
-                  </li>
-                ))}
-              </ul>
             </div>
           </div>
         </article>
@@ -173,7 +180,8 @@ const headlines: Record<string, string> = {
 <style>
   .hero {
     position: relative;
-    background: var(--bg-soft);
+    background: #0b1220;
+    color: #fff;
     overflow: hidden;
     --interval: 6000ms;
   }
@@ -189,30 +197,52 @@ const headlines: Record<string, string> = {
     opacity: 0;
     visibility: hidden;
     transition:
-      opacity 0.7s var(--ease),
-      visibility 0.7s;
+      opacity 0.8s var(--ease),
+      visibility 0.8s;
   }
   .slide.is-active {
     opacity: 1;
     visibility: visible;
     position: relative;
   }
+
+  /* Fondo fotográfico */
   .slide-bg {
     position: absolute;
     inset: 0;
-    background:
-      radial-gradient(60% 80% at 85% 20%, color-mix(in srgb, var(--c) 22%, transparent) 0%, transparent 70%),
-      radial-gradient(40% 60% at 10% 90%, color-mix(in srgb, var(--c) 12%, transparent) 0%, transparent 70%),
-      linear-gradient(180deg, #fff 0%, var(--bg-soft) 100%);
+    overflow: hidden;
+    background: #0b1220;
   }
+  .slide-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 70% center;
+    transform: scale(1.06);
+    transition: transform 7s linear;
+  }
+  .slide.is-active .slide-img {
+    transform: scale(1);
+  }
+  /* Sombra para legibilidad del texto (izquierda) + base para los controles */
+  .slide-shade {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(8, 12, 24, 0.86) 0%, rgba(8, 12, 24, 0.62) 38%, rgba(8, 12, 24, 0.1) 68%, rgba(8, 12, 24, 0) 100%),
+      linear-gradient(180deg, rgba(8, 12, 24, 0.25) 0%, rgba(8, 12, 24, 0) 30%, rgba(8, 12, 24, 0) 70%, rgba(8, 12, 24, 0.55) 100%);
+  }
+
   .slide-inner {
     position: relative;
     display: grid;
-    grid-template-columns: 1.1fr 0.9fr;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
     align-items: center;
     gap: 40px;
-    padding-top: 56px;
-    padding-bottom: 56px;
+    padding-top: 72px;
+    padding-bottom: 72px;
   }
 
   .slide-copy > * {
@@ -244,21 +274,27 @@ const headlines: Record<string, string> = {
     gap: 8px;
     padding: 8px 14px;
     border-radius: var(--radius-pill);
-    background: #fff;
-    color: var(--c);
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    color: #fff;
     font-weight: 700;
     font-size: 0.82rem;
-    box-shadow: var(--shadow-sm);
     margin-bottom: 20px;
   }
+  .slide-kicker :global(svg) {
+    color: color-mix(in srgb, var(--c) 55%, #fff);
+  }
   .slide-title {
-    max-width: 12ch;
+    max-width: 13ch;
     margin-bottom: 16px;
+    color: #fff;
+    text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
   }
   .slide-desc {
     font-size: 1.12rem;
-    color: var(--ink-2);
-    max-width: 48ch;
+    color: rgba(255, 255, 255, 0.82);
+    max-width: 46ch;
     margin-bottom: 28px;
   }
   .slide-actions {
@@ -268,112 +304,13 @@ const headlines: Record<string, string> = {
     flex-wrap: wrap;
   }
   .slide-from {
-    color: var(--muted);
+    color: rgba(255, 255, 255, 0.7);
     font-size: 0.95rem;
   }
   .slide-from b {
-    color: var(--ink);
+    color: #fff;
     font-size: 1.2rem;
     font-weight: 800;
-  }
-
-  /* Arte */
-  .slide-art {
-    position: relative;
-    height: 420px;
-    display: grid;
-    place-items: center;
-  }
-  .art-orb {
-    position: absolute;
-    width: 360px;
-    height: 360px;
-    border-radius: 50%;
-    background: radial-gradient(circle, color-mix(in srgb, var(--c) 45%, #fff) 0%, transparent 65%);
-    filter: blur(20px);
-    opacity: 0.9;
-  }
-  .art-cube {
-    position: relative;
-    display: grid;
-    place-items: center;
-    width: 260px;
-    height: 260px;
-    border-radius: 60px;
-    background: linear-gradient(145deg, #fff, color-mix(in srgb, var(--c) 8%, #fff));
-    color: var(--c);
-    box-shadow:
-      0 30px 60px color-mix(in srgb, var(--c) 35%, transparent),
-      inset 0 -10px 0 color-mix(in srgb, var(--c) 16%, #fff),
-      inset 0 1px 0 #fff;
-    transform: rotate(-6deg) scale(0.9);
-    opacity: 0;
-    transition:
-      transform 0.9s var(--ease),
-      opacity 0.6s;
-  }
-  .slide.is-active .art-cube {
-    transform: rotate(-6deg) scale(1);
-    opacity: 1;
-    animation: float 6s ease-in-out infinite 0.9s;
-  }
-  @keyframes float {
-    0%,
-    100% {
-      transform: rotate(-6deg) translateY(0);
-    }
-    50% {
-      transform: rotate(-4deg) translateY(-12px);
-    }
-  }
-  .art-list {
-    position: absolute;
-    right: 0;
-    bottom: 10px;
-    width: 250px;
-    padding: 14px;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(10px);
-    border: 1px solid #fff;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    opacity: 0;
-    transform: translateX(20px);
-    transition:
-      opacity 0.6s 0.3s,
-      transform 0.7s var(--ease) 0.3s;
-  }
-  .slide.is-active .art-list {
-    opacity: 1;
-    transform: none;
-  }
-  .art-list li {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.82rem;
-    font-weight: 600;
-    padding: 6px 0;
-    border-bottom: 1px dashed var(--border);
-  }
-  .art-list li:last-child {
-    border: 0;
-  }
-  .art-list li span:nth-child(2) {
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .art-list .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--c);
-    flex: none;
-  }
-  .art-list b {
-    color: var(--ink);
   }
 
   /* Controles */
@@ -383,7 +320,8 @@ const headlines: Record<string, string> = {
     align-items: center;
     justify-content: space-between;
     gap: 20px;
-    padding-bottom: 28px;
+    padding-top: 6px;
+    padding-bottom: 22px;
   }
   .hero-dots {
     display: flex;
@@ -401,18 +339,19 @@ const headlines: Record<string, string> = {
     padding: 10px 12px;
     border-radius: 12px;
     text-align: left;
-    color: var(--muted);
+    color: rgba(255, 255, 255, 0.55);
     transition:
       background 0.2s,
       color 0.2s;
   }
   .dot-btn:hover {
-    background: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
   }
   .dot-btn.is-active {
-    color: var(--ink);
-    background: #fff;
-    box-shadow: var(--shadow-sm);
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.12);
   }
   .dot-label {
     display: block;
@@ -425,14 +364,14 @@ const headlines: Record<string, string> = {
     display: block;
     height: 3px;
     border-radius: 2px;
-    background: var(--border);
+    background: rgba(255, 255, 255, 0.18);
     overflow: hidden;
   }
   .dot-fill {
     display: block;
     height: 100%;
     width: 0;
-    background: var(--blue);
+    background: #fff;
   }
   .dot-btn.is-active .dot-fill {
     animation: fill var(--interval) linear forwards;
@@ -447,6 +386,11 @@ const headlines: Record<string, string> = {
       animation: none;
       width: 100%;
     }
+    .slide-img,
+    .slide.is-active .slide-img {
+      transform: none;
+      transition: none;
+    }
   }
   .hero-arrows {
     display: flex;
@@ -458,18 +402,18 @@ const headlines: Record<string, string> = {
     width: 46px;
     height: 46px;
     border-radius: 50%;
-    background: #fff;
-    color: var(--ink);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(8px);
     transition:
       background 0.2s,
       color 0.2s,
       transform 0.2s;
   }
   .arrow:hover {
-    background: var(--ink);
-    color: #fff;
+    background: #fff;
+    color: var(--ink);
     transform: translateY(-2px);
   }
 
@@ -477,31 +421,19 @@ const headlines: Record<string, string> = {
     .slide-inner {
       grid-template-columns: 1fr;
       gap: 12px;
-      padding-top: 40px;
-      padding-bottom: 32px;
-    }
-    .slide-art {
-      height: 300px;
-      order: -1;
-    }
-    .art-cube {
-      width: 180px;
-      height: 180px;
-      border-radius: 44px;
-    }
-    .art-cube :global(svg) {
-      width: 80px;
-      height: 80px;
-    }
-    .art-orb {
-      width: 260px;
-      height: 260px;
-    }
-    .art-list {
-      display: none;
+      padding-top: 56px;
+      padding-bottom: 40px;
     }
     .hero-track {
-      min-height: 0;
+      min-height: 480px;
+    }
+    .slide-img {
+      object-position: 78% center;
+    }
+    .slide-shade {
+      background:
+        linear-gradient(90deg, rgba(8, 12, 24, 0.9) 0%, rgba(8, 12, 24, 0.7) 50%, rgba(8, 12, 24, 0.35) 100%),
+        linear-gradient(180deg, rgba(8, 12, 24, 0.3) 0%, rgba(8, 12, 24, 0) 40%, rgba(8, 12, 24, 0.6) 100%);
     }
     .slide-title {
       max-width: none;
@@ -512,6 +444,16 @@ const headlines: Record<string, string> = {
     }
   }
   @media (max-width: 640px) {
+    .hero-track {
+      min-height: 440px;
+    }
+    .slide-img {
+      object-position: 62% center;
+    }
+    .slide-shade {
+      background:
+        linear-gradient(180deg, rgba(8, 12, 24, 0.55) 0%, rgba(8, 12, 24, 0.45) 45%, rgba(8, 12, 24, 0.85) 100%);
+    }
     .dot-label {
       display: none;
     }
