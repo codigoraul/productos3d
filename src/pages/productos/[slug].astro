@@ -6,6 +6,7 @@ import ProductCard from '@/components/ProductCard.astro';
 import { formatCLP } from '@/lib/format';
 import { SITE, whatsappLink } from '@/config';
 import { getCategories, getProduct, getProducts, getRelatedProducts } from '@/lib/catalog';
+import { getProductSeo } from '@/lib/seo';
 
 export async function getStaticPaths() {
   const products = await getProducts();
@@ -18,6 +19,11 @@ const categories = await getCategories();
 const cats = categories.filter((c) => p.categories.includes(c.slug));
 const main = cats[0];
 const related = await getRelatedProducts(p, 4);
+// SEO definido en Yoast (WordPress); si no hay, se usan los valores del producto.
+const seo = await getProductSeo(p.id);
+const seoTitle = seo?.title ?? p.name;
+const seoDescription = seo?.description ?? p.shortDescription;
+const seoImage = seo?.ogImage ?? p.images[0]?.src;
 const onSale = p.regularPrice && p.regularPrice > p.price;
 const wa = whatsappLink(`Hola, quiero pedir "${p.name}" (${formatCLP(p.price)}).`);
 const waCustom = whatsappLink(`Hola, quiero personalizar "${p.name}".`);
@@ -39,7 +45,7 @@ const jsonLd = {
 };
 ---
 
-<BaseLayout title={p.name} description={p.shortDescription} image={p.images[0]?.src}>
+<BaseLayout title={seoTitle} description={seoDescription} image={seoImage} suffix={!seo?.title}>
   <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd)} />
 
   <section class="pd">

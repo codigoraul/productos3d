@@ -4,6 +4,7 @@ import PageHero from '@/components/PageHero.astro';
 import CatalogGrid from '@/components/CatalogGrid.astro';
 import Icon from '@/components/Icon.astro';
 import { getCategories, getCategory, getCategoryCounts, getProductsByCategory } from '@/lib/catalog';
+import { getCategorySeo } from '@/lib/seo';
 
 export async function getStaticPaths() {
   const categories = await getCategories();
@@ -16,9 +17,15 @@ const categories = await getCategories();
 const counts = await getCategoryCounts();
 const products = await getProductsByCategory(category.slug);
 const others = categories.filter((c) => c.slug !== category.slug);
+const seo = await getCategorySeo(category.id);
 ---
 
-<BaseLayout title={category.name} description={category.description}>
+<BaseLayout
+  title={seo?.title ?? category.name}
+  description={seo?.description ?? category.description}
+  image={seo?.ogImage}
+  suffix={!seo?.title}
+>
   <PageHero
     eyebrow={`${products.length} ${products.length === 1 ? 'producto' : 'productos'}`}
     title={category.name}
