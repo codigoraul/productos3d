@@ -1,0 +1,28 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import CategoryCard from '@/components/CategoryCard.astro';
+import { getCategories, getCategoryCounts } from '@/lib/catalog';
+
+const categories = await getCategories();
+const counts = await getCategoryCounts();
+---
+
+<BaseLayout
+  title="Categorías"
+  description="Explora nuestras categorías de productos impresos en 3D: llaveros, soportes de celular, figuras anime, dibujos y arte, decoración y personalizados."
+>
+  <PageHero
+    eyebrow="Explora"
+    title="Categorías"
+    text="Elige una categoría para ver todos sus productos. ¿No encuentras lo que buscas? Cotiza una pieza personalizada."
+    crumbs={[{ label: 'Categorías' }]}
+  />
+  <section class="section-sm">
+    <div class="container">
+      <div class="grid grid-2">
+        {categories.map((c) => <CategoryCard category={c} count={counts[c.slug] ?? 0} variant="wide" />)}
+      </div>
+    </div>
+  </section>
+</BaseLayout>

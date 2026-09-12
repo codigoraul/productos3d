@@ -1,0 +1,529 @@
+---
+/**
+ * Slider principal: una slide por categoría. Autoplay, flechas, dots, swipe táctil,
+ * teclado y pausa al pasar el mouse. Sin librerías.
+ */
+import Icon from '@/components/Icon.astro';
+import { getCategories, getCategoryCounts, getProductsByCategory } from '@/lib/catalog';
+import { formatCLP } from '@/lib/format';
+
+const categories = await getCategories();
+const counts = await getCategoryCounts();
+
+const slides = await Promise.all(
+  categories.map(async (c) => {
+    const prods = await getProductsByCategory(c.slug);
+    const min = Math.min(...prods.map((p) => p.price));
+    return { ...c, count: counts[c.slug] ?? 0, from: isFinite(min) ? min : 0, sample: prods.slice(0, 3) };
+  })
+);
+
+const headlines: Record<string, string> = {
+  llaveros: 'Llaveros que cuentan tu historia',
+  'soportes-celular': 'Tu teléfono, siempre en su lugar',
+  anime: 'Tus personajes, en 3D real',
+  dibujos: 'De un dibujo a una pieza 3D',
+  decoracion: 'Diseño impreso para tu espacio',
+  personalizados: '¿Lo imaginas? Lo imprimimos',
+};
+---
+
+<section class="hero" id="hero" aria-roledescription="carrusel" aria-label="Categorías destacadas">
+  <div class="hero-track" id="hero-track">
+    {
+      slides.map((s, i) => (
+        <article
+          class:list={['slide', { 'is-active': i === 0 }]}
+          style={`--c:${s.accent}`}
+          data-index={i}
+          aria-roledescription="slide"
+          aria-label={`${i + 1} de ${slides.length}: ${s.name}`}
+          aria-hidden={i !== 0 ? 'true' : 'false'}
+        >
+          <div class="slide-bg" />
+          <div class="container slide-inner">
+            <div class="slide-copy">
+              <span class="slide-kicker">
+                <Icon name={s.icon} size={16} /> {s.name} · {s.count} productos
+              </span>
+              <h1 class="slide-title">{headlines[s.slug] ?? s.name}</h1>
+              <p class="slide-desc">{s.description}</p>
+              <div class="slide-actions">
+                <a href={`/categorias/${s.slug}`} class="btn btn-primary btn-lg">
+                  Ver {s.name.toLowerCase()} <Icon name="arrow-right" />
+                </a>
+                <span class="slide-from">
+                  desde <b>{formatCLP(s.from)}</b>
+                </span>
+              </div>
+            </div>
+
+            <div class="slide-art" aria-hidden="true">
+              <div class="art-orb" />
+              <div class="art-cube">
+                <Icon name={s.icon} size={110} stroke={1.4} />
+              </div>
+              <ul class="art-list">
+                {s.sample.map((p) => (
+                  <li>
+                    <span class="dot" />
+                    <span>{p.name}</span>
+                    <b>{formatCLP(p.price)}</b>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </article>
+      ))
+    }
+  </div>
+
+  <div class="container hero-controls">
+    <div class="hero-dots" role="tablist" aria-label="Elegir slide">
+      {
+        slides.map((s, i) => (
+          <button
+            class:list={['dot-btn', { 'is-active': i === 0 }]}
+            role="tab"
+            aria-selected={i === 0 ? 'true' : 'false'}
+            aria-label={s.name}
+            data-go={i}
+          >
+            <span class="dot-label">{s.name}</span>
+            <span class="dot-bar">
+              <span class="dot-fill" />
+            </span>
+          </button>
+        ))
+      }
+    </div>
+    <div class="hero-arrows">
+      <button class="arrow" data-dir="-1" aria-label="Anterior"><Icon name="chevron-left" size={22} /></button>
+      <button class="arrow" data-dir="1" aria-label="Siguiente"><Icon name="chevron-right" size={22} /></button>
+    </div>
+  </div>
+</section>
+
+<script>
+  const root = document.getElementById('hero')!;
+  const slides = Array.from(root.querySelectorAll<HTMLElement>('.slide'));
+  const dots = Array.from(root.querySelectorAll<HTMLButtonElement>('.dot-btn'));
+  const INTERVAL = 6000;
+  let current = 0;
+  let timer: number | undefined;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function go(next: number) {
+    const n = (next + slides.length) % slides.length;
+    if (n === current) return;
+    slides[current].classList.remove('is-active');
+    slides[current].setAttribute('aria-hidden', 'true');
+    dots[current].classList.remove('is-active');
+    dots[current].setAttribute('aria-selected', 'false');
+    current = n;
+    slides[current].classList.add('is-active');
+    slides[current].setAttribute('aria-hidden', 'false');
+    dots[current].classList.add('is-active');
+    dots[current].setAttribute('aria-selected', 'true');
+    restart();
+  }
+
+  function restart() {
+    if (reduce) return;
+    window.clearInterval(timer);
+    root.style.setProperty('--interval', `${INTERVAL}ms`);
+    // reinicia la animación de la barra de progreso
+    dots.forEach((d) => {
+      const f = d.querySelector<HTMLElement>('.dot-fill')!;
+      f.style.animation = 'none';
+      void f.offsetWidth;
+      f.style.animation = '';
+    });
+    timer = window.setInterval(() => go(current + 1), INTERVAL);
+  }
+
+  root.querySelectorAll<HTMLButtonElement>('.arrow').forEach((b) =>
+    b.addEventListener('click', () => go(current + Number(b.dataset.dir)))
+  );
+  dots.forEach((d) => d.addEventListener('click', () => go(Number(d.dataset.go))));
+
+  root.addEventListener('mouseenter', () => window.clearInterval(timer));
+  root.addEventListener('mouseleave', restart);
+  root.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') go(current + 1);
+    if (e.key === 'ArrowLeft') go(current - 1);
+  });
+
+  // Swipe
+  let x0 = 0;
+  root.addEventListener('pointerdown', (e) => (x0 = e.clientX), { passive: true });
+  root.addEventListener(
+    'pointerup',
+    (e) => {
+      const dx = e.clientX - x0;
+      if (Math.abs(dx) > 50) go(current + (dx < 0 ? 1 : -1));
+    },
+    { passive: true }
+  );
+
+  restart();
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    background: var(--bg-soft);
+    overflow: hidden;
+    --interval: 6000ms;
+  }
+  .hero-track {
+    position: relative;
+    min-height: 560px;
+  }
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.7s var(--ease),
+      visibility 0.7s;
+  }
+  .slide.is-active {
+    opacity: 1;
+    visibility: visible;
+    position: relative;
+  }
+  .slide-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(60% 80% at 85% 20%, color-mix(in srgb, var(--c) 22%, transparent) 0%, transparent 70%),
+      radial-gradient(40% 60% at 10% 90%, color-mix(in srgb, var(--c) 12%, transparent) 0%, transparent 70%),
+      linear-gradient(180deg, #fff 0%, var(--bg-soft) 100%);
+  }
+  .slide-inner {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: center;
+    gap: 40px;
+    padding-top: 56px;
+    padding-bottom: 56px;
+  }
+
+  .slide-copy > * {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  .slide.is-active .slide-copy > * {
+    animation: rise 0.7s var(--ease) forwards;
+  }
+  .slide.is-active .slide-copy > :nth-child(2) {
+    animation-delay: 0.08s;
+  }
+  .slide.is-active .slide-copy > :nth-child(3) {
+    animation-delay: 0.16s;
+  }
+  .slide.is-active .slide-copy > :nth-child(4) {
+    animation-delay: 0.24s;
+  }
+  @keyframes rise {
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .slide-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: var(--radius-pill);
+    background: #fff;
+    color: var(--c);
+    font-weight: 700;
+    font-size: 0.82rem;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 20px;
+  }
+  .slide-title {
+    max-width: 12ch;
+    margin-bottom: 16px;
+  }
+  .slide-desc {
+    font-size: 1.12rem;
+    color: var(--ink-2);
+    max-width: 48ch;
+    margin-bottom: 28px;
+  }
+  .slide-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .slide-from {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .slide-from b {
+    color: var(--ink);
+    font-size: 1.2rem;
+    font-weight: 800;
+  }
+
+  /* Arte */
+  .slide-art {
+    position: relative;
+    height: 420px;
+    display: grid;
+    place-items: center;
+  }
+  .art-orb {
+    position: absolute;
+    width: 360px;
+    height: 360px;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--c) 45%, #fff) 0%, transparent 65%);
+    filter: blur(20px);
+    opacity: 0.9;
+  }
+  .art-cube {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 260px;
+    height: 260px;
+    border-radius: 60px;
+    background: linear-gradient(145deg, #fff, color-mix(in srgb, var(--c) 8%, #fff));
+    color: var(--c);
+    box-shadow:
+      0 30px 60px color-mix(in srgb, var(--c) 35%, transparent),
+      inset 0 -10px 0 color-mix(in srgb, var(--c) 16%, #fff),
+      inset 0 1px 0 #fff;
+    transform: rotate(-6deg) scale(0.9);
+    opacity: 0;
+    transition:
+      transform 0.9s var(--ease),
+      opacity 0.6s;
+  }
+  .slide.is-active .art-cube {
+    transform: rotate(-6deg) scale(1);
+    opacity: 1;
+    animation: float 6s ease-in-out infinite 0.9s;
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: rotate(-6deg) translateY(0);
+    }
+    50% {
+      transform: rotate(-4deg) translateY(-12px);
+    }
+  }
+  .art-list {
+    position: absolute;
+    right: 0;
+    bottom: 10px;
+    width: 250px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    opacity: 0;
+    transform: translateX(20px);
+    transition:
+      opacity 0.6s 0.3s,
+      transform 0.7s var(--ease) 0.3s;
+  }
+  .slide.is-active .art-list {
+    opacity: 1;
+    transform: none;
+  }
+  .art-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .art-list li:last-child {
+    border: 0;
+  }
+  .art-list li span:nth-child(2) {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .art-list .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--c);
+    flex: none;
+  }
+  .art-list b {
+    color: var(--ink);
+  }
+
+  /* Controles */
+  .hero-controls {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding-bottom: 28px;
+  }
+  .hero-dots {
+    display: flex;
+    gap: 6px;
+    flex: 1;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .hero-dots::-webkit-scrollbar {
+    display: none;
+  }
+  .dot-btn {
+    flex: 1;
+    min-width: 96px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    text-align: left;
+    color: var(--muted);
+    transition:
+      background 0.2s,
+      color 0.2s;
+  }
+  .dot-btn:hover {
+    background: rgba(255, 255, 255, 0.7);
+  }
+  .dot-btn.is-active {
+    color: var(--ink);
+    background: #fff;
+    box-shadow: var(--shadow-sm);
+  }
+  .dot-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+    margin-bottom: 8px;
+  }
+  .dot-bar {
+    display: block;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--border);
+    overflow: hidden;
+  }
+  .dot-fill {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--blue);
+  }
+  .dot-btn.is-active .dot-fill {
+    animation: fill var(--interval) linear forwards;
+  }
+  @keyframes fill {
+    to {
+      width: 100%;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dot-btn.is-active .dot-fill {
+      animation: none;
+      width: 100%;
+    }
+  }
+  .hero-arrows {
+    display: flex;
+    gap: 8px;
+  }
+  .arrow {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: #fff;
+    color: var(--ink);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    transition:
+      background 0.2s,
+      color 0.2s,
+      transform 0.2s;
+  }
+  .arrow:hover {
+    background: var(--ink);
+    color: #fff;
+    transform: translateY(-2px);
+  }
+
+  @media (max-width: 1024px) {
+    .slide-inner {
+      grid-template-columns: 1fr;
+      gap: 12px;
+      padding-top: 40px;
+      padding-bottom: 32px;
+    }
+    .slide-art {
+      height: 300px;
+      order: -1;
+    }
+    .art-cube {
+      width: 180px;
+      height: 180px;
+      border-radius: 44px;
+    }
+    .art-cube :global(svg) {
+      width: 80px;
+      height: 80px;
+    }
+    .art-orb {
+      width: 260px;
+      height: 260px;
+    }
+    .art-list {
+      display: none;
+    }
+    .hero-track {
+      min-height: 0;
+    }
+    .slide-title {
+      max-width: none;
+    }
+    .dot-btn {
+      min-width: 0;
+      flex: none;
+    }
+  }
+  @media (max-width: 640px) {
+    .dot-label {
+      display: none;
+    }
+    .dot-btn {
+      padding: 10px 8px;
+      min-width: 36px;
+    }
+    .dot-bar {
+      width: 100%;
+    }
+    .hero-arrows {
+      display: none;
+    }
+  }
+</style>

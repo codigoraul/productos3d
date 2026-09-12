@@ -1,0 +1,461 @@
+---
+import Icon from '@/components/Icon.astro';
+import { SITE, whatsappLink } from '@/config';
+import { getCategories } from '@/lib/catalog';
+
+const categories = await getCategories();
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+
+const nav = [
+  { href: '/', label: 'Inicio' },
+  { href: '/productos', label: 'Productos' },
+  { href: '/categorias', label: 'Categorías', mega: true },
+  { href: '/servicios', label: 'Servicios' },
+  { href: '/nosotros', label: 'Nosotros' },
+];
+
+const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+---
+
+<header class="header" id="header">
+  <div class="topbar">
+    <div class="container topbar-inner">
+      <span><Icon name="truck" size={16} /> Envíos a todo Chile</span>
+      <span class="sep"></span>
+      <span><Icon name="zap" size={16} /> Cotización en menos de 24 h</span>
+      <span class="sep hide-sm"></span>
+      <span class="hide-sm"><Icon name="map-pin" size={16} /> {SITE.city}</span>
+    </div>
+  </div>
+
+  <div class="bar">
+    <div class="container bar-inner">
+      <a href="/" class="brand" aria-label={`${SITE.name} — inicio`}>
+        <img src="/logo.png" alt={SITE.name} width="56" height="56" />
+        <span class="brand-text">Productos<b>3D</b></span>
+      </a>
+
+      <nav class="nav" aria-label="Principal">
+        <ul>
+          {
+            nav.map((item) => (
+              <li class:list={{ 'has-mega': item.mega }}>
+                <a href={item.href} class:list={{ 'is-active': isActive(item.href) }}>
+                  {item.label}
+                  {item.mega && <Icon name="chevron-down" size={14} />}
+                </a>
+                {item.mega && (
+                  <div class="mega">
+                    <div class="mega-grid">
+                      {categories.map((c) => (
+                        <a href={`/categorias/${c.slug}`} class="mega-item">
+                          <span class="mega-icon" style={`--c:${c.accent}`}>
+                            <Icon name={c.icon} size={20} />
+                          </span>
+                          <span>
+                            <strong>{c.name}</strong>
+                            <small>{c.description.split('.')[0]}.</small>
+                          </span>
+                        </a>
+                      ))}
+                    </div>
+                    <a href="/categorias" class="mega-all">
+                      Ver todas las categorías <Icon name="arrow-right" size={16} />
+                    </a>
+                  </div>
+                )}
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <form class="search" action="/productos" method="get" role="search">
+        <label for="header-q" class="sr-only">Buscar productos</label>
+        <Icon name="search" size={18} />
+        <input id="header-q" type="search" name="q" placeholder="Buscar llaveros, soportes, anime…" autocomplete="off" />
+      </form>
+
+      <a class="btn btn-primary btn-sm cta" href={whatsappLink('Hola, quiero cotizar un producto 3D.')} target="_blank" rel="noopener">
+        <Icon name="whatsapp" size={18} /> Cotizar
+      </a>
+
+      <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false" aria-controls="mobile-menu">
+        <Icon name="menu" size={26} />
+      </button>
+    </div>
+  </div>
+
+  <div class="mobile" id="mobile-menu" hidden>
+    <form class="search mobile-search" action="/productos" method="get" role="search">
+      <Icon name="search" size={18} />
+      <input type="search" name="q" placeholder="Buscar productos…" aria-label="Buscar productos" />
+    </form>
+    <ul class="mobile-nav">
+      {
+        nav.map((item) => (
+          <li>
+            <a href={item.href} class:list={{ 'is-active': isActive(item.href) }}>
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="mobile-label">Categorías</p>
+    <ul class="mobile-cats">
+      {
+        categories.map((c) => (
+          <li>
+            <a href={`/categorias/${c.slug}`}>
+              <span class="mega-icon" style={`--c:${c.accent}`}>
+                <Icon name={c.icon} size={18} />
+              </span>
+              {c.name}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <a class="btn btn-whatsapp btn-block" href={whatsappLink('Hola, quiero cotizar un producto 3D.')} target="_blank" rel="noopener">
+      <Icon name="whatsapp" /> Cotizar por WhatsApp
+    </a>
+  </div>
+</header>
+
+<script>
+  const burger = document.getElementById('burger')!;
+  const menu = document.getElementById('mobile-menu')!;
+  const header = document.getElementById('header')!;
+
+  burger.addEventListener('click', () => {
+    const open = menu.hidden;
+    menu.hidden = !open;
+    burger.setAttribute('aria-expanded', String(open));
+    document.body.style.overflow = open ? 'hidden' : '';
+    header.classList.toggle('menu-open', open);
+  });
+
+  const onScroll = () => header.classList.toggle('is-scrolled', window.scrollY > 8);
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+</script>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 800;
+    background: #fff;
+  }
+  .topbar {
+    background: var(--ink);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+  .topbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    height: 36px;
+  }
+  .topbar-inner span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .topbar .sep {
+    width: 1px;
+    height: 14px;
+    background: rgba(255, 255, 255, 0.25);
+  }
+  .topbar svg {
+    color: #8fb8ff;
+  }
+
+  .bar {
+    border-bottom: 1px solid var(--border);
+    transition: box-shadow 0.25s;
+  }
+  .header.is-scrolled .bar {
+    box-shadow: 0 6px 24px rgba(43, 46, 51, 0.08);
+  }
+  .bar-inner {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    height: var(--header-h);
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex: none;
+  }
+  .brand img {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+  }
+  .brand-text {
+    font-weight: 800;
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .brand-text b {
+    color: var(--blue);
+  }
+
+  .nav {
+    flex: 1;
+  }
+  .nav ul {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .nav li {
+    position: relative;
+  }
+  .nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 14px;
+    border-radius: var(--radius-pill);
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--ink-2);
+    transition:
+      background 0.2s,
+      color 0.2s;
+  }
+  .nav a:hover,
+  .nav a.is-active {
+    color: var(--blue);
+    background: var(--blue-50);
+  }
+
+  /* Mega menú */
+  .mega {
+    position: absolute;
+    left: -20px;
+    top: calc(100% + 10px);
+    width: 640px;
+    padding: 18px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition:
+      opacity 0.2s,
+      transform 0.25s var(--ease),
+      visibility 0.2s;
+  }
+  .mega::before {
+    content: '';
+    position: absolute;
+    inset: -12px 0 auto;
+    height: 12px;
+  }
+  .has-mega:hover .mega,
+  .has-mega:focus-within .mega {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+  .mega-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+  .mega-item {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    padding: 12px !important;
+    border-radius: var(--radius) !important;
+    background: none !important;
+    color: var(--ink) !important;
+  }
+  .mega-item:hover {
+    background: var(--bg-soft) !important;
+  }
+  .mega-item strong {
+    display: block;
+    font-size: 0.95rem;
+  }
+  .mega-item small {
+    display: block;
+    color: var(--muted);
+    font-weight: 500;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    margin-top: 2px;
+  }
+  .mega-icon {
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--c) 12%, #fff);
+    color: var(--c);
+  }
+  .mega-all {
+    margin-top: 10px;
+    padding: 12px 14px !important;
+    justify-content: center;
+    font-size: 0.9rem !important;
+    color: var(--blue) !important;
+    background: var(--blue-50) !important;
+  }
+
+  /* Buscador */
+  .search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 300px;
+    padding: 0 14px;
+    height: 44px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-pill);
+    background: var(--bg-soft);
+    color: var(--muted);
+    transition:
+      border-color 0.2s,
+      background 0.2s,
+      box-shadow 0.2s;
+  }
+  .search:focus-within {
+    border-color: var(--blue);
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(21, 101, 216, 0.12);
+  }
+  .search input {
+    flex: 1;
+    border: 0;
+    background: none;
+    outline: none;
+    color: var(--ink);
+    min-width: 0;
+  }
+  .search input::placeholder {
+    color: var(--muted-2);
+  }
+  .search input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+  }
+
+  .cta {
+    flex: none;
+  }
+  .burger {
+    display: none;
+    color: var(--ink);
+    padding: 6px;
+  }
+
+  /* Mobile */
+  .mobile {
+    position: fixed;
+    inset: calc(var(--header-h) + 36px) 0 0;
+    background: #fff;
+    padding: 20px var(--gutter) 40px;
+    overflow-y: auto;
+    z-index: 799;
+  }
+  .header.is-scrolled .mobile {
+    top: calc(var(--header-h) + 36px);
+  }
+  .mobile-search {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  .mobile-nav a {
+    display: block;
+    padding: 14px 4px;
+    font-weight: 700;
+    font-size: 1.15rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .mobile-nav a.is-active {
+    color: var(--blue);
+  }
+  .mobile-label {
+    margin: 24px 0 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .mobile-cats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 24px;
+  }
+  .mobile-cats a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 0.92rem;
+  }
+  .mobile-cats a:hover {
+    background: var(--bg-soft);
+  }
+  .mobile-cats .mega-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  @media (max-width: 1180px) {
+    .search {
+      width: 220px;
+    }
+  }
+  @media (max-width: 1024px) {
+    .nav,
+    .search,
+    .cta {
+      display: none;
+    }
+    .burger {
+      display: inline-grid;
+      margin-left: auto;
+    }
+    .bar-inner {
+      height: 68px;
+    }
+    :global(:root) {
+      --header-h: 68px;
+    }
+    .brand img {
+      width: 48px;
+      height: 48px;
+    }
+  }
+  @media (max-width: 640px) {
+    .hide-sm {
+      display: none !important;
+    }
+    .topbar-inner {
+      font-size: 0.74rem;
+      gap: 10px;
+    }
+  }
+</style>

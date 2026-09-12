@@ -1,0 +1,242 @@
+---
+/**
+ * Galería de la ficha de producto: imagen principal + miniaturas.
+ * Usa todas las imágenes de WooCommerce (destacada + galería del producto).
+ * Con 0 imágenes cae al placeholder de ProductVisual; con 1 no muestra miniaturas.
+ */
+import Icon from '@/components/Icon.astro';
+import ProductVisual from '@/components/ProductVisual.astro';
+import type { ProductImage } from '@/lib/types';
+
+interface Props {
+  images: ProductImage[];
+  categorySlug: string;
+  name: string;
+}
+const { images, categorySlug, name } = Astro.props;
+const many = images.length > 1;
+---
+
+{
+  images.length === 0 ? (
+    <div class="pg-main card">
+      <ProductVisual images={[]} categorySlug={categorySlug} name={name} size="hero" loading="eager" />
+      <slot name="badges" />
+    </div>
+  ) : (
+    <div class="pg" data-gallery>
+      <div class="pg-main card">
+        <div class="pg-track">
+          {images.map((img, i) => (
+            <img
+              class="pg-img"
+              src={img.src}
+              alt={img.alt || `${name} — foto ${i + 1}`}
+              loading={i === 0 ? 'eager' : 'lazy'}
+              decoding="async"
+              data-index={i}
+              aria-hidden={i === 0 ? 'false' : 'true'}
+            />
+          ))}
+        </div>
+        {many && (
+          <>
+            <button type="button" class="pg-nav prev" data-prev aria-label="Foto anterior">
+              <Icon name="chevron-left" size={20} />
+            </button>
+            <button type="button" class="pg-nav next" data-next aria-label="Foto siguiente">
+              <Icon name="chevron-right" size={20} />
+            </button>
+            <span class="pg-count" aria-live="polite"><b data-current>1</b> / {images.length}</span>
+          </>
+        )}
+        <slot name="badges" />
+      </div>
+
+      {many && (
+        <div class="pg-thumbs" role="tablist" aria-label={`Fotos de ${name}`}>
+          {images.map((img, i) => (
+            <button
+              type="button"
+              role="tab"
+              class:list={['pg-thumb', { active: i === 0 }]}
+              data-thumb={i}
+              aria-selected={i === 0 ? 'true' : 'false'}
+              aria-label={`Ver foto ${i + 1}`}
+            >
+              <img src={img.src} alt="" loading="lazy" decoding="async" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+<style>
+  .pg-main {
+    position: relative;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--bg-soft);
+  }
+  .pg-main:hover {
+    transform: none;
+  }
+  .pg-track {
+    display: flex;
+    height: 100%;
+    transition: transform 0.45s var(--ease);
+    will-change: transform;
+  }
+  .pg-img {
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .pg-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--ink);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
+    border: 0;
+    cursor: pointer;
+    opacity: 0;
+    transition:
+      opacity 0.25s,
+      background 0.2s;
+  }
+  .pg-nav.prev {
+    left: 14px;
+  }
+  .pg-nav.next {
+    right: 14px;
+  }
+  .pg-main:hover .pg-nav,
+  .pg-nav:focus-visible {
+    opacity: 1;
+  }
+  .pg-nav:hover {
+    background: #fff;
+    color: var(--blue);
+  }
+  .pg-count {
+    position: absolute;
+    right: 14px;
+    bottom: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(43, 46, 51, 0.78);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .pg-thumbs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .pg-thumb {
+    aspect-ratio: 1;
+    padding: 0;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--bg-soft);
+    cursor: pointer;
+    transition:
+      border-color 0.2s,
+      transform 0.2s var(--ease);
+  }
+  .pg-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .pg-thumb:hover {
+    transform: translateY(-2px);
+  }
+  .pg-thumb.active {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 18%, transparent);
+  }
+  @media (max-width: 900px) {
+    .pg-nav {
+      opacity: 1;
+      width: 36px;
+      height: 36px;
+    }
+    .pg-thumbs {
+      grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pg-track {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  function initGallery(root: HTMLElement) {
+    const track = root.querySelector<HTMLElement>('.pg-track')!;
+    const imgs = Array.from(root.querySelectorAll<HTMLImageElement>('.pg-img'));
+    const thumbs = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-thumb]'));
+    const current = root.querySelector<HTMLElement>('[data-current]');
+    const total = imgs.length;
+    if (total < 2) return;
+    let index = 0;
+
+    const go = (i: number) => {
+      index = (i + total) % total;
+      track.style.transform = `translateX(-${index * 100}%)`;
+      imgs.forEach((img, k) => img.setAttribute('aria-hidden', k === index ? 'false' : 'true'));
+      thumbs.forEach((t, k) => {
+        t.classList.toggle('active', k === index);
+        t.setAttribute('aria-selected', k === index ? 'true' : 'false');
+      });
+      if (current) current.textContent = String(index + 1);
+      thumbs[index]?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    };
+
+    root.querySelector('[data-prev]')?.addEventListener('click', () => go(index - 1));
+    root.querySelector('[data-next]')?.addEventListener('click', () => go(index + 1));
+    thumbs.forEach((t, k) => t.addEventListener('click', () => go(k)));
+
+    const main = root.querySelector<HTMLElement>('.pg-main')!;
+    main.tabIndex = 0;
+    main.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') go(index - 1);
+      if (e.key === 'ArrowRight') go(index + 1);
+    });
+
+    // Swipe táctil
+    let startX = 0;
+    let dragging = false;
+    main.addEventListener('pointerdown', (e) => {
+      startX = e.clientX;
+      dragging = true;
+    });
+    main.addEventListener('pointerup', (e) => {
+      if (!dragging) return;
+      dragging = false;
+      const dx = e.clientX - startX;
+      if (Math.abs(dx) > 40) go(dx < 0 ? index + 1 : index - 1);
+    });
+    main.addEventListener('pointercancel', () => (dragging = false));
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-gallery]').forEach(initGallery);
+</script>

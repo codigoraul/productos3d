@@ -1,0 +1,307 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Icon from '@/components/Icon.astro';
+import ProductGallery from '@/components/ProductGallery.astro';
+import ProductCard from '@/components/ProductCard.astro';
+import { formatCLP } from '@/lib/format';
+import { SITE, whatsappLink } from '@/config';
+import { getCategories, getProduct, getProducts, getRelatedProducts } from '@/lib/catalog';
+
+export async function getStaticPaths() {
+  const products = await getProducts();
+  return products.map((p) => ({ params: { slug: p.slug } }));
+}
+
+const { slug } = Astro.params;
+const p = (await getProduct(slug!))!;
+const categories = await getCategories();
+const cats = categories.filter((c) => p.categories.includes(c.slug));
+const main = cats[0];
+const related = await getRelatedProducts(p, 4);
+const onSale = p.regularPrice && p.regularPrice > p.price;
+const wa = whatsappLink(`Hola, quiero pedir "${p.name}" (${formatCLP(p.price)}).`);
+const waCustom = whatsappLink(`Hola, quiero personalizar "${p.name}".`);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: p.name,
+  description: p.shortDescription,
+  image: p.images.map((i) => new URL(i.src, SITE.url).href),
+  brand: { '@type': 'Brand', name: SITE.name },
+  offers: {
+    '@type': 'Offer',
+    priceCurrency: 'CLP',
+    price: p.price,
+    availability: p.inStock ? 'https://schema.org/InStock' : 'https://schema.org/PreOrder',
+    url: new URL(`/productos/${p.slug}`, SITE.url).href,
+  },
+};
+---
+
+<BaseLayout title={p.name} description={p.shortDescription} image={p.images[0]?.src}>
+  <script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd)} />
+
+  <section class="pd">
+    <div class="container">
+      <nav class="crumbs" aria-label="Migas de pan">
+        <ol>
+          <li><a href="/">Inicio</a></li>
+          <li><a href="/productos">Productos</a></li>
+          {main && <li><a href={`/categorias/${main.slug}`}>{main.name}</a></li>}
+          <li><span aria-current="page">{p.name}</span></li>
+        </ol>
+      </nav>
+
+      <div class="pd-grid">
+        <div class="pd-media">
+          <ProductGallery images={p.images} categorySlug={p.categories[0]} name={p.name}>
+            <div class="pd-badges" slot="badges">
+              {onSale && <span class="badge badge-sale">Oferta</span>}
+              {!p.inStock && <span class="badge badge-out">Se fabrica a pedido</span>}
+              {p.customizable && <span class="badge badge-custom">Personalizable</span>}
+            </div>
+          </ProductGallery>
+        </div>
+
+        <div class="pd-info">
+          <div class="pd-cats">
+            {cats.map((c) => <a href={`/categorias/${c.slug}`} class="badge badge-blue">{c.name}</a>)}
+          </div>
+          <h1>{p.name}</h1>
+          <p class="pd-short">{p.shortDescription}</p>
+
+          <div class="pd-price">
+            {onSale && <s>{formatCLP(p.regularPrice!)}</s>}
+            <strong>{formatCLP(p.price)}</strong>
+            <span class:list={['pd-stock', { ok: p.inStock }]}>
+              <Icon name={p.inStock ? 'check' : 'clock'} size={16} />
+              {p.inStock ? 'Disponible · entrega 2 a 4 días hábiles' : 'A pedido · 7 a 10 días hábiles'}
+            </span>
+          </div>
+
+          <div class="pd-actions">
+            <a href={wa} target="_blank" rel="noopener" class="btn btn-whatsapp btn-lg"><Icon name="whatsapp" /> Pedir por WhatsApp</a>
+            {p.customizable && <a href={waCustom} target="_blank" rel="noopener" class="btn btn-outline btn-lg"><Icon name="palette" /> Personalizar</a>}
+          </div>
+
+          {
+            p.attributes.length > 0 && (
+              <dl class="pd-attrs">
+                {p.attributes.map((a) => (
+                  <div>
+                    <dt>{a.name}</dt>
+                    <dd>{a.options.join(' · ')}</dd>
+                  </div>
+                ))}
+              </dl>
+            )
+          }
+
+          <ul class="pd-perks">
+            <li><Icon name="truck" size={18} /> Envío a todo Chile</li>
+            <li><Icon name="shield" size={18} /> Garantía de reimpresión</li>
+            <li><Icon name="printer" size={18} /> Impreso en taller propio</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pd-desc">
+        <h2>Descripción</h2>
+        <div class="prose" set:html={p.description} />
+        {
+          p.tags.length > 0 && (
+            <p class="pd-tags">
+              {p.tags.map((t) => (
+                <a href={`/productos?q=${encodeURIComponent(t)}`} class="chip">
+                  #{t}
+                </a>
+              ))}
+            </p>
+          )
+        }
+      </div>
+    </div>
+  </section>
+
+  {
+    related.length > 0 && (
+      <section class="section bg-soft">
+        <div class="container">
+          <div class="section-head left">
+            <span class="eyebrow">También te puede gustar</span>
+            <h2>Productos relacionados</h2>
+          </div>
+          <div class="grid grid-4">
+            {related.map((r) => (
+              <ProductCard product={r} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .pd {
+    padding: 28px 0 56px;
+  }
+  .crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+  .crumbs li + li::before {
+    content: '/';
+    margin-right: 6px;
+    color: var(--muted-2);
+  }
+  .crumbs a:hover {
+    color: var(--blue);
+  }
+  .crumbs span {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .pd-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+  .pd-media {
+    position: sticky;
+    top: 96px;
+  }
+  .pd-badges {
+    position: absolute;
+    z-index: 2;
+    top: 16px;
+    left: 16px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .pd-cats {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .pd-info h1 {
+    font-size: clamp(1.7rem, 3vw, 2.4rem);
+    margin-bottom: 10px;
+  }
+  .pd-short {
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin-bottom: 22px;
+  }
+  .pd-price {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 18px 20px;
+    background: var(--bg-soft);
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+  }
+  .pd-price s {
+    color: var(--muted-2);
+  }
+  .pd-price strong {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .pd-stock {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--warning);
+    width: 100%;
+  }
+  .pd-stock.ok {
+    color: var(--success);
+  }
+  .pd-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 26px;
+  }
+  .pd-attrs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 0 0 24px;
+  }
+  .pd-attrs div {
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+  }
+  .pd-attrs dt {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .pd-attrs dd {
+    margin: 0;
+    font-weight: 600;
+    font-size: 0.92rem;
+  }
+  .pd-perks {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--ink-2);
+  }
+  .pd-perks li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .pd-perks svg {
+    color: var(--blue);
+  }
+  .pd-desc {
+    max-width: 760px;
+    margin-top: 56px;
+  }
+  .pd-desc h2 {
+    font-size: 1.5rem;
+    margin-bottom: 14px;
+  }
+  .pd-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+  .pd-tags .chip {
+    padding: 6px 12px;
+    font-size: 0.82rem;
+  }
+  @media (max-width: 900px) {
+    .pd-grid {
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+    .pd-attrs {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

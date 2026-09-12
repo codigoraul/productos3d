@@ -1,0 +1,122 @@
+---
+import Icon from '@/components/Icon.astro';
+import type { Category } from '@/lib/types';
+
+interface Props {
+  category: Category;
+  count?: number;
+  variant?: 'tile' | 'wide';
+}
+const { category: c, count, variant = 'tile' } = Astro.props;
+---
+
+<a href={`/categorias/${c.slug}`} class:list={['card cc', variant]} style={`--c:${c.accent}`}>
+  <span class="cc-bg"></span>
+  <span class="cc-icon"><Icon name={c.icon} size={variant === 'wide' ? 34 : 28} stroke={1.8} /></span>
+  <span class="cc-text">
+    <strong>{c.name}</strong>
+    {count !== undefined && <small>{count} {count === 1 ? 'producto' : 'productos'}</small>}
+    {variant === 'wide' && <p>{c.description}</p>}
+  </span>
+  <span class="cc-arrow"><Icon name="arrow-right" size={18} /></span>
+</a>
+
+<style>
+  .cc {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    overflow: hidden;
+    color: var(--ink);
+  }
+  .cc.wide {
+    align-items: flex-start;
+    padding: 26px;
+  }
+  .cc-bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(90% 80% at 100% 0%, color-mix(in srgb, var(--c) 14%, #fff) 0%, #fff 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .cc:hover .cc-bg {
+    opacity: 1;
+  }
+  .cc-icon {
+    position: relative;
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--c) 12%, #fff);
+    color: var(--c);
+    transition:
+      background 0.3s,
+      color 0.3s,
+      transform 0.3s var(--ease);
+  }
+  .cc.wide .cc-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+  }
+  .cc:hover .cc-icon {
+    background: var(--c);
+    color: #fff;
+    transform: rotate(-6deg) scale(1.05);
+  }
+  .cc-text {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+  }
+  .cc-text strong {
+    display: block;
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+  .cc.wide .cc-text strong {
+    font-size: 1.25rem;
+  }
+  .cc-text small {
+    display: block;
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 2px;
+  }
+  .cc-text p {
+    margin: 8px 0 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+  .cc-arrow {
+    position: relative;
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    color: var(--muted);
+    transition:
+      background 0.3s,
+      color 0.3s,
+      border-color 0.3s,
+      transform 0.3s var(--ease);
+  }
+  .cc:hover .cc-arrow {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+    transform: translateX(3px);
+  }
+</style>

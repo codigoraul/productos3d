@@ -1,0 +1,303 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import Icon from '@/components/Icon.astro';
+import { SITE, whatsappLink } from '@/config';
+
+const services = [
+  {
+    icon: 'printer',
+    title: 'Impresión 3D por encargo',
+    text: '¿Ya tienes el archivo STL, OBJ o 3MF? Lo imprimimos en el material y color que elijas. Cotización por gramos y tiempo de impresión.',
+    items: ['PLA, PLA+, PETG, TPU flexible', 'Resina de alta definición para detalle fino', 'Volumen hasta 25 × 25 × 25 cm (mayor en piezas seccionadas)'],
+  },
+  {
+    icon: 'ruler',
+    title: 'Modelado y diseño 3D',
+    text: 'Convertimos tu idea, boceto o pieza física en un modelo 3D listo para imprimir. Ideal para repuestos, prototipos y productos propios.',
+    items: ['Modelado desde fotos, medidas o dibujos', 'Ingeniería inversa de repuestos', 'Entrega del archivo editable si lo necesitas'],
+  },
+  {
+    icon: 'palette',
+    title: 'Pintura y acabado',
+    text: 'Lijado, imprimación, pintura acrílica a mano y barniz protector. Para figuras, bustos, réplicas y piezas de exhibición.',
+    items: ['Acabado mate, satinado o brillante', 'Pintura por capas y detalles finos', 'Bases y peanas a juego'],
+  },
+  {
+    icon: 'users',
+    title: 'Merchandising y regalos corporativos',
+    text: 'Llaveros, porta-tarjetas, trofeos y objetos con el logo de tu empresa. Descuentos por volumen desde 50 unidades.',
+    items: ['Muestra física antes de producir', 'Impresión bicolor con tu logo', 'Packaging opcional'],
+  },
+  {
+    icon: 'sparkles',
+    title: 'Cosplay y props',
+    text: 'Armas, cascos, armaduras y accesorios a escala real, impresos en secciones ensamblables y listos para pintar o pintados.',
+    items: ['Escala 1:1 o a medida', 'Refuerzos internos y encastres', 'Asesoría para el armado'],
+  },
+  {
+    icon: 'box',
+    title: 'Litofanías y regalos personalizados',
+    text: 'Tu foto o dibujo convertido en un objeto único: litofanías con luz, cuadros en relieve, mapas topográficos y más.',
+    items: ['Envías la foto, te mostramos la vista previa', 'Con o sin base LED', 'Empaque para regalo'],
+  },
+];
+
+const faqs = [
+  { q: '¿Cuánto demora un pedido?', a: 'Productos de catálogo: 2 a 4 días hábiles más el envío. Piezas personalizadas o pintadas: 7 a 10 días hábiles según complejidad. Siempre te confirmamos el plazo antes de empezar.' },
+  { q: '¿Cómo se paga?', a: 'Transferencia bancaria o WebPay. Para pedidos personalizados pedimos un 50 % al confirmar el diseño y el resto antes del envío.' },
+  { q: '¿Hacen envíos a regiones?', a: 'Sí, a todo Chile por Starken o Chilexpress. En Temuco y Padre Las Casas puedes retirar sin costo o coordinar entrega.' },
+  { q: '¿Qué formatos de archivo aceptan?', a: 'STL, OBJ, 3MF y STEP. Si solo tienes una imagen, un boceto o medidas, nosotros hacemos el modelado.' },
+  { q: '¿Qué pasa si la pieza llega dañada?', a: 'La reimprimimos y la reenviamos sin costo. Solo necesitamos una foto del daño al recibirla.' },
+];
+---
+
+<BaseLayout
+  title="Servicios de impresión 3D"
+  description="Impresión 3D por encargo, modelado y diseño, pintura de figuras, merchandising corporativo, cosplay y litofanías. Cotiza en menos de 24 horas."
+>
+  <PageHero
+    eyebrow="Servicios"
+    title="Todo lo que podemos imprimir para ti"
+    text="Además del catálogo, trabajamos proyectos a medida: desde un repuesto que ya no se fabrica hasta una figura de colección pintada a mano."
+    crumbs={[{ label: 'Servicios' }]}
+  />
+
+  <section class="section">
+    <div class="container">
+      <div class="grid grid-3">
+        {
+          services.map((s, i) => (
+            <article class="card svc reveal" style={`transition-delay:${(i % 3) * 80}ms`}>
+              <span class="svc-icon">
+                <Icon name={s.icon} size={26} stroke={1.8} />
+              </span>
+              <h3>{s.title}</h3>
+              <p>{s.text}</p>
+              <ul>
+                {s.items.map((it) => (
+                  <li>
+                    <Icon name="check" size={16} /> {it}
+                  </li>
+                ))}
+              </ul>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Cotizar -->
+  <section class="section bg-soft" id="cotizar">
+    <div class="container">
+      <div class="quote">
+        <div>
+          <span class="eyebrow">Cotiza tu proyecto</span>
+          <h2>Cuéntanos qué necesitas y te respondemos en menos de 24 h</h2>
+          <p class="text-muted">
+            Escríbenos por WhatsApp con una descripción, medidas aproximadas y, si tienes, fotos o el archivo 3D.
+            Te enviamos precio, plazo y una vista previa antes de imprimir.
+          </p>
+          <ol class="quote-steps">
+            <li><b>1</b> Describe la pieza o envía el archivo</li>
+            <li><b>2</b> Recibes cotización y vista previa</li>
+            <li><b>3</b> Confirmas y empezamos a imprimir</li>
+          </ol>
+          <div class="quote-actions">
+            <a href={whatsappLink('Hola, quiero cotizar un proyecto de impresión 3D. Te cuento: ')} target="_blank" rel="noopener" class="btn btn-whatsapp btn-lg">
+              <Icon name="whatsapp" /> Cotizar por WhatsApp
+            </a>
+            <a href={`mailto:${SITE.email}?subject=Cotización impresión 3D`} class="btn btn-outline btn-lg"><Icon name="mail" /> Enviar por correo</a>
+          </div>
+        </div>
+        <div class="quote-card card">
+          <h3>Materiales disponibles</h3>
+          <table>
+            <tbody>
+              <tr><th>PLA / PLA+</th><td>Uso general, +20 colores, económico</td></tr>
+              <tr><th>PETG</th><td>Resistente al calor y golpes, exterior</td></tr>
+              <tr><th>TPU</th><td>Flexible, fundas y amortiguación</td></tr>
+              <tr><th>Resina</th><td>Máximo detalle, figuras y miniaturas</td></tr>
+            </tbody>
+          </table>
+          <p class="quote-note"><Icon name="ruler" size={16} /> Precisión de capa desde 0,1 mm (FDM) y 0,05 mm (resina).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section">
+    <div class="container narrow">
+      <div class="section-head">
+        <span class="eyebrow">Preguntas frecuentes</span>
+        <h2>Lo que nos preguntan siempre</h2>
+      </div>
+      <div class="faq">
+        {
+          faqs.map((f) => (
+            <details>
+              <summary>
+                {f.q} <Icon name="chevron-down" size={20} />
+              </summary>
+              <p>{f.a}</p>
+            </details>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .svc {
+    padding: 28px;
+  }
+  .svc-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+    background: var(--blue-50);
+    color: var(--blue);
+    margin-bottom: 18px;
+  }
+  .svc h3 {
+    font-size: 1.15rem;
+  }
+  .svc p {
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.65;
+  }
+  .svc ul li {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 6px 0;
+    border-top: 1px dashed var(--border);
+  }
+  .svc ul svg {
+    color: var(--success);
+    flex: none;
+    margin-top: 3px;
+  }
+
+  .quote {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 48px;
+    align-items: center;
+  }
+  .quote h2 {
+    margin-bottom: 14px;
+  }
+  .quote-steps {
+    margin: 22px 0 26px;
+    display: grid;
+    gap: 10px;
+  }
+  .quote-steps li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+  }
+  .quote-steps b {
+    display: inline-grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: #fff;
+    font-size: 0.85rem;
+  }
+  .quote-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .quote-card {
+    padding: 28px;
+  }
+  .quote-card h3 {
+    margin-bottom: 14px;
+  }
+  .quote-card table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+  }
+  .quote-card th {
+    text-align: left;
+    padding: 10px 10px 10px 0;
+    color: var(--blue);
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+  }
+  .quote-card td {
+    padding: 10px 0;
+    color: var(--ink-2);
+    border-bottom: 1px solid var(--border);
+  }
+  .quote-note {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin: 16px 0 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .narrow {
+    max-width: 820px;
+  }
+  .faq details {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+    background: #fff;
+    transition: box-shadow 0.2s;
+  }
+  .faq details[open] {
+    box-shadow: var(--shadow-sm);
+  }
+  .faq summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 22px;
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+  }
+  .faq summary::-webkit-details-marker {
+    display: none;
+  }
+  .faq summary svg {
+    flex: none;
+    color: var(--muted);
+    transition: transform 0.25s;
+  }
+  .faq details[open] summary svg {
+    transform: rotate(180deg);
+  }
+  .faq p {
+    margin: 0;
+    padding: 0 22px 20px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  @media (max-width: 900px) {
+    .quote {
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+  }
+</style>

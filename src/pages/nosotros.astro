@@ -1,0 +1,253 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import Icon from '@/components/Icon.astro';
+import { SITE, whatsappLink } from '@/config';
+
+const stats = [
+  { n: '+1.500', l: 'piezas impresas' },
+  { n: '+300', l: 'clientes felices' },
+  { n: '6', l: 'impresoras en taller' },
+  { n: '24 h', l: 'para cotizar' },
+];
+
+const values = [
+  { icon: 'heart', title: 'Hecho con cariño', text: 'Cada pieza pasa por nuestras manos: revisamos, lijamos y empacamos una a una.' },
+  { icon: 'layers', title: 'Calidad real', text: 'Filamentos y resinas de marcas reconocidas, impresoras calibradas y control de cada capa.' },
+  { icon: 'zap', title: 'Rapidez honesta', text: 'Te decimos el plazo real y lo cumplimos. Si algo se atrasa, te avisamos antes.' },
+  { icon: 'message-circle', title: 'Trato directo', text: 'Hablas con quien diseña e imprime tu pieza. Sin intermediarios ni formularios eternos.' },
+];
+---
+
+<BaseLayout
+  title="Nosotros"
+  description="Somos un taller de impresión 3D en Temuco, Chile. Diseñamos e imprimimos llaveros, figuras, soportes y piezas personalizadas con envío a todo el país."
+>
+  <PageHero
+    eyebrow="Nosotros"
+    title="Un taller pequeño con ideas grandes"
+    text="Productos 3D nació de un hobby que se transformó en oficio: convertir ideas en objetos reales, capa por capa."
+    crumbs={[{ label: 'Nosotros' }]}
+  />
+
+  <section class="section">
+    <div class="container about">
+      <div class="about-text">
+        <span class="eyebrow">Nuestra historia</span>
+        <h2>Del garaje al catálogo</h2>
+        <p>
+          Empezamos con una sola impresora y un pedido de llaveros para un cumpleaños. Hoy tenemos un taller en
+          {SITE.city}, seis impresoras FDM y de resina, y enviamos a todo Chile.
+        </p>
+        <p>
+          Nos gusta lo que hacemos: figuras de anime pintadas a mano, repuestos que ya no se venden, regalos que no
+          existen en ninguna tienda. Si lo puedes imaginar, probablemente lo podemos imprimir.
+        </p>
+        <a href={whatsappLink('Hola, quiero conocer más sobre Productos 3D.')} target="_blank" rel="noopener" class="btn btn-primary">
+          <Icon name="whatsapp" /> Conversemos
+        </a>
+      </div>
+      <div class="about-art">
+        <div class="about-logo">
+          <img src="/logo.png" alt={SITE.name} width="320" height="320" />
+        </div>
+        <ul class="stats">
+          {
+            stats.map((s) => (
+              <li>
+                <strong>{s.n}</strong>
+                <span>{s.l}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-soft">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Cómo trabajamos</span>
+        <h2>Lo que nos importa</h2>
+      </div>
+      <div class="grid grid-4">
+        {
+          values.map((v, i) => (
+            <div class="card val reveal" style={`transition-delay:${i * 80}ms`}>
+              <span class="val-icon">
+                <Icon name={v.icon} size={24} stroke={1.8} />
+              </span>
+              <h3>{v.title}</h3>
+              <p>{v.text}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="contact card">
+        <div>
+          <span class="eyebrow">Contacto</span>
+          <h2>¿Hablamos?</h2>
+          <p class="text-muted">Respondemos por WhatsApp de lunes a viernes, de 9:00 a 19:00. Los fines de semana también, pero más lento.</p>
+        </div>
+        <ul class="contact-list">
+          <li>
+            <Icon name="whatsapp" size={22} />
+            <div><small>WhatsApp</small><a href={whatsappLink('Hola')} target="_blank" rel="noopener">+{SITE.whatsapp}</a></div>
+          </li>
+          <li>
+            <Icon name="mail" size={22} />
+            <div><small>Correo</small><a href={`mailto:${SITE.email}`}>{SITE.email}</a></div>
+          </li>
+          <li>
+            <Icon name="instagram" size={22} />
+            <div><small>Instagram</small><a href={SITE.instagram} target="_blank" rel="noopener">@productos3d.cl</a></div>
+          </li>
+          <li>
+            <Icon name="map-pin" size={22} />
+            <div><small>Taller</small><span>{SITE.city} · retiro con cita previa</span></div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .about {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 56px;
+    align-items: center;
+  }
+  .about-text p {
+    font-size: 1.08rem;
+    color: var(--ink-2);
+    line-height: 1.75;
+  }
+  .about-text .btn {
+    margin-top: 10px;
+  }
+  .about-art {
+    display: grid;
+    gap: 20px;
+  }
+  .about-logo {
+    display: grid;
+    place-items: center;
+    padding: 30px;
+    border-radius: var(--radius-lg);
+    background:
+      radial-gradient(70% 70% at 30% 20%, var(--blue-100) 0%, transparent 70%),
+      var(--bg-soft);
+  }
+  .about-logo img {
+    width: 260px;
+    height: 260px;
+    object-fit: contain;
+    filter: drop-shadow(0 20px 30px rgba(21, 101, 216, 0.25));
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .stats li {
+    text-align: center;
+    padding: 16px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .stats strong {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--blue);
+    letter-spacing: -0.02em;
+  }
+  .stats span {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .val {
+    padding: 26px;
+  }
+  .val-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    background: var(--ink);
+    color: #fff;
+    margin-bottom: 16px;
+  }
+  .val h3 {
+    font-size: 1.08rem;
+  }
+  .val p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.93rem;
+    line-height: 1.6;
+  }
+  .contact {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    padding: 40px;
+    align-items: center;
+  }
+  .contact:hover {
+    transform: none;
+  }
+  .contact-list {
+    display: grid;
+    gap: 14px;
+  }
+  .contact-list li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .contact-list svg {
+    flex: none;
+    color: var(--blue);
+  }
+  .contact-list small {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .contact-list a,
+  .contact-list span {
+    font-weight: 600;
+  }
+  .contact-list a:hover {
+    color: var(--blue);
+  }
+  @media (max-width: 900px) {
+    .about,
+    .contact {
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+    .contact {
+      padding: 28px;
+    }
+  }
+  @media (max-width: 520px) {
+    .stats {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

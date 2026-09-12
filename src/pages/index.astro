@@ -1,0 +1,255 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import HeroSlider from '@/components/HeroSlider.astro';
+import ProductCard from '@/components/ProductCard.astro';
+import CategoryCard from '@/components/CategoryCard.astro';
+import Icon from '@/components/Icon.astro';
+import { SITE, whatsappLink } from '@/config';
+import { getCategories, getCategoryCounts, getFeaturedProducts } from '@/lib/catalog';
+
+const categories = await getCategories();
+const counts = await getCategoryCounts();
+const featured = await getFeaturedProducts(8);
+
+const steps = [
+  { icon: 'message-circle', title: 'Nos cuentas tu idea', text: 'Elige un producto del catálogo o describe lo que necesitas. Puedes enviarnos fotos, bocetos o un archivo STL.' },
+  { icon: 'ruler', title: 'Diseñamos y cotizamos', text: 'Modelamos la pieza, te mostramos una vista previa y te enviamos el precio en menos de 24 horas.' },
+  { icon: 'printer', title: 'Imprimimos con precisión', text: 'Impresión FDM o resina según el producto. Post-proceso, lijado y pintura a mano cuando corresponde.' },
+  { icon: 'truck', title: 'Lo recibes en tu casa', text: 'Envíos a todo Chile por Starken o Chilexpress. Retiro en Temuco sin costo.' },
+];
+
+const perks = [
+  { icon: 'shield', title: 'Calidad garantizada', text: 'Si llega dañado, lo reimprimimos sin costo.' },
+  { icon: 'palette', title: '+20 colores', text: 'PLA, PETG, TPU flexible y resina.' },
+  { icon: 'zap', title: 'Entrega rápida', text: 'Productos de catálogo en 2 a 4 días hábiles.' },
+  { icon: 'heart', title: 'Hecho en Chile', text: 'Taller propio en la Región de La Araucanía.' },
+];
+---
+
+<BaseLayout title={SITE.tagline} suffix={false}>
+  <HeroSlider />
+
+  <!-- Categorías -->
+  <section class="section-sm">
+    <div class="container">
+      <div class="section-head left">
+        <span class="eyebrow">Explora</span>
+        <h2>Categorías</h2>
+      </div>
+      <div class="grid grid-3">
+        {categories.map((c) => <CategoryCard category={c} count={counts[c.slug] ?? 0} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- Destacados -->
+  <section class="section bg-soft">
+    <div class="container">
+      <div class="head-row">
+        <div class="section-head left" style="margin-bottom:0">
+          <span class="eyebrow">Lo más pedido</span>
+          <h2>Productos destacados</h2>
+        </div>
+        <a href="/productos" class="btn btn-outline">Ver todo el catálogo <Icon name="arrow-right" /></a>
+      </div>
+      <div class="grid grid-4">
+        {featured.map((p) => <ProductCard product={p} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- Cómo funciona -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Proceso</span>
+        <h2>De la idea al objeto en 4 pasos</h2>
+        <p>Así trabajamos cada pedido, tanto los productos de catálogo como las piezas personalizadas.</p>
+      </div>
+      <ol class="steps">
+        {
+          steps.map((s, i) => (
+            <li class="step reveal" style={`transition-delay:${i * 80}ms`}>
+              <span class="step-n">0{i + 1}</span>
+              <span class="step-icon">
+                <Icon name={s.icon} size={26} stroke={1.8} />
+              </span>
+              <h3>{s.title}</h3>
+              <p>{s.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- Perks + CTA -->
+  <section class="section bg-ink cta-band">
+    <div class="container">
+      <div class="cta-grid">
+        <div>
+          <span class="eyebrow">Personalizados</span>
+          <h2>¿Tienes algo en mente que no está en el catálogo?</h2>
+          <p class="cta-text">
+            Repuestos, prototipos, regalos corporativos, cosplay, maquetas. Envíanos tu idea o archivo y te cotizamos en
+            menos de 24 horas.
+          </p>
+          <div class="cta-actions">
+            <a href={whatsappLink('Hola, quiero cotizar una pieza personalizada.')} target="_blank" rel="noopener" class="btn btn-whatsapp btn-lg">
+              <Icon name="whatsapp" /> Cotizar por WhatsApp
+            </a>
+            <a href="/servicios" class="btn btn-outline-light btn-lg">Ver servicios</a>
+          </div>
+        </div>
+        <ul class="perks">
+          {
+            perks.map((p) => (
+              <li>
+                <span class="perk-icon">
+                  <Icon name={p.icon} size={22} />
+                </span>
+                <div>
+                  <strong>{p.title}</strong>
+                  <span>{p.text}</span>
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .head-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    counter-reset: step;
+  }
+  .step {
+    position: relative;
+    padding: 28px 24px;
+    border-radius: var(--radius-lg);
+    background: var(--bg-soft);
+    border: 1px solid transparent;
+    transition:
+      border-color 0.3s,
+      background 0.3s;
+  }
+  .step:hover {
+    background: #fff;
+    border-color: var(--border);
+  }
+  .step-n {
+    position: absolute;
+    top: 20px;
+    right: 22px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--muted-2);
+    letter-spacing: 0.05em;
+  }
+  .step-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+    background: var(--blue);
+    color: #fff;
+    margin-bottom: 18px;
+    box-shadow: 0 10px 22px rgba(21, 101, 216, 0.28);
+  }
+  .step h3 {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+  }
+  .step p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .cta-band {
+    background:
+      radial-gradient(60% 80% at 100% 0%, rgba(21, 101, 216, 0.35) 0%, transparent 60%),
+      var(--ink);
+  }
+  .cta-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 56px;
+    align-items: center;
+  }
+  .cta-text {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 1.1rem;
+    max-width: 52ch;
+    margin-bottom: 28px;
+  }
+  .cta-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .perks {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .perks li {
+    display: flex;
+    gap: 14px;
+    padding: 18px;
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .perk-icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(110, 164, 255, 0.15);
+    color: #8fb8ff;
+  }
+  .perks strong {
+    display: block;
+    color: #fff;
+    margin-bottom: 2px;
+  }
+  .perks span:last-child {
+    font-size: 0.88rem;
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  @media (max-width: 1024px) {
+    .steps {
+      grid-template-columns: 1fr 1fr;
+    }
+    .cta-grid {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+  }
+  @media (max-width: 560px) {
+    .steps,
+    .perks {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

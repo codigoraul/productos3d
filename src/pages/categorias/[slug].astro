@@ -1,0 +1,54 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import CatalogGrid from '@/components/CatalogGrid.astro';
+import Icon from '@/components/Icon.astro';
+import { getCategories, getCategory, getCategoryCounts, getProductsByCategory } from '@/lib/catalog';
+
+export async function getStaticPaths() {
+  const categories = await getCategories();
+  return categories.map((c) => ({ params: { slug: c.slug } }));
+}
+
+const { slug } = Astro.params;
+const category = (await getCategory(slug!))!;
+const categories = await getCategories();
+const counts = await getCategoryCounts();
+const products = await getProductsByCategory(category.slug);
+const others = categories.filter((c) => c.slug !== category.slug);
+---
+
+<BaseLayout title={category.name} description={category.description}>
+  <PageHero
+    eyebrow={`${products.length} ${products.length === 1 ? 'producto' : 'productos'}`}
+    title={category.name}
+    text={category.description}
+    crumbs={[{ label: 'Categorías', href: '/categorias' }, { label: category.name }]}
+    accent={category.accent}
+  >
+    <div class="others">
+      {
+        others.map((c) => (
+          <a href={`/categorias/${c.slug}`} class="chip">
+            <Icon name={c.icon} size={16} /> {c.name}
+          </a>
+        ))
+      }
+    </div>
+  </PageHero>
+
+  <section class="section-sm">
+    <div class="container">
+      <CatalogGrid products={products} categories={categories} counts={counts} lockedCategory={category.slug} />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .others {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 22px;
+  }
+</style>

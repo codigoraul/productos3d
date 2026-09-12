@@ -1,0 +1,173 @@
+---
+import Icon from '@/components/Icon.astro';
+import { SITE, whatsappLink } from '@/config';
+import { getCategories } from '@/lib/catalog';
+
+const categories = await getCategories();
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="/" class="brand">
+          <img src="/logo.png" alt={SITE.name} width="64" height="64" />
+          <span>Productos<b>3D</b></span>
+        </a>
+        <p>
+          Diseñamos e imprimimos en 3D productos únicos: llaveros, soportes, figuras y piezas a medida. Hecho en
+          Chile, enviado a todo el país.
+        </p>
+        <div class="social">
+          <a href={SITE.instagram} target="_blank" rel="noopener" aria-label="Instagram"><Icon name="instagram" /></a>
+          <a href={whatsappLink('Hola, vengo desde productos3d.cl')} target="_blank" rel="noopener" aria-label="WhatsApp"
+            ><Icon name="whatsapp" /></a
+          >
+          <a href={`mailto:${SITE.email}`} aria-label="Correo"><Icon name="mail" /></a>
+        </div>
+      </div>
+
+      <div>
+        <h4>Catálogo</h4>
+        <ul>
+          {categories.map((c) => <li><a href={`/categorias/${c.slug}`}>{c.name}</a></li>)}
+          <li><a href="/productos">Todos los productos</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Empresa</h4>
+        <ul>
+          <li><a href="/">Inicio</a></li>
+          <li><a href="/servicios">Servicios</a></li>
+          <li><a href="/nosotros">Nosotros</a></li>
+          <li><a href="/servicios#cotizar">Cotizar un proyecto</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Contacto</h4>
+        <ul class="contact">
+          <li><Icon name="whatsapp" size={18} /> <a href={whatsappLink('Hola')} target="_blank" rel="noopener">+{SITE.whatsapp}</a></li>
+          <li><Icon name="mail" size={18} /> <a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
+          <li><Icon name="map-pin" size={18} /> <span>{SITE.city}</span></li>
+          <li><Icon name="clock" size={18} /> <span>Lun a Vie · 9:00 a 19:00</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© {year} {SITE.name} · {SITE.domain}</span>
+      <span>Envíos a todo Chile · Pago por transferencia y WebPay</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    background: var(--ink);
+    color: rgba(255, 255, 255, 0.75);
+    padding: 64px 0 28px;
+    margin-top: auto;
+  }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr 1.2fr;
+    gap: 40px;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .brand img {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: #fff;
+    padding: 4px;
+    object-fit: contain;
+  }
+  .brand span {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.02em;
+  }
+  .brand b {
+    color: #6ea4ff;
+  }
+  .footer-brand p {
+    max-width: 380px;
+    line-height: 1.7;
+  }
+  .social {
+    display: flex;
+    gap: 10px;
+  }
+  .social a {
+    display: inline-grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    transition:
+      background 0.2s,
+      transform 0.2s;
+  }
+  .social a:hover {
+    background: var(--blue);
+    transform: translateY(-2px);
+  }
+  h4 {
+    color: #fff;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  ul li {
+    margin-bottom: 10px;
+  }
+  ul a {
+    transition: color 0.2s;
+  }
+  ul a:hover {
+    color: #fff;
+  }
+  .contact li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .contact svg {
+    color: #6ea4ff;
+    flex: none;
+  }
+  .footer-bottom {
+    margin-top: 48px;
+    padding-top: 22px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  @media (max-width: 900px) {
+    .footer-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 520px) {
+    .footer-grid {
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+  }
+</style>

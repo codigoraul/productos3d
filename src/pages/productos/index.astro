@@ -1,0 +1,27 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import CatalogGrid from '@/components/CatalogGrid.astro';
+import { getCategories, getCategoryCounts, getProducts } from '@/lib/catalog';
+
+const products = await getProducts();
+const categories = await getCategories();
+const counts = await getCategoryCounts();
+---
+
+<BaseLayout
+  title="Catálogo de productos 3D"
+  description="Todos nuestros productos impresos en 3D: llaveros, soportes de celular, figuras anime, litofanías, decoración y piezas personalizadas. Busca y filtra por categoría."
+>
+  <PageHero
+    eyebrow="Catálogo"
+    title="Todos los productos"
+    text="Busca por nombre, personaje o material y filtra por categoría. Todo se imprime en nuestro taller y se envía a todo Chile."
+    crumbs={[{ label: 'Productos' }]}
+  />
+  <section class="section-sm">
+    <div class="container">
+      <CatalogGrid products={products} categories={categories} counts={counts} />
+    </div>
+  </section>
+</BaseLayout>

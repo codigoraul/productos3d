@@ -1,0 +1,78 @@
+---
+/** Cabecera de páginas interiores con breadcrumb. */
+interface Crumb {
+  label: string;
+  href?: string;
+}
+interface Props {
+  eyebrow?: string;
+  title: string;
+  text?: string;
+  crumbs?: Crumb[];
+  accent?: string;
+}
+const { eyebrow, title, text, crumbs = [], accent = '#1565D8' } = Astro.props;
+---
+
+<section class="ph" style={`--c:${accent}`}>
+  <div class="container">
+    {
+      crumbs.length > 0 && (
+        <nav class="crumbs" aria-label="Migas de pan">
+          <ol>
+            <li>
+              <a href="/">Inicio</a>
+            </li>
+            {crumbs.map((c) => (
+              <li>{c.href ? <a href={c.href}>{c.label}</a> : <span aria-current="page">{c.label}</span>}</li>
+            ))}
+          </ol>
+        </nav>
+      )
+    }
+    {eyebrow && <span class="eyebrow">{eyebrow}</span>}
+    <h1>{title}</h1>
+    {text && <p class="ph-text">{text}</p>}
+    <slot />
+  </div>
+</section>
+
+<style>
+  .ph {
+    padding: 44px 0 40px;
+    background:
+      radial-gradient(50% 100% at 100% 0%, color-mix(in srgb, var(--c) 16%, transparent) 0%, transparent 70%),
+      var(--bg-soft);
+    border-bottom: 1px solid var(--border);
+  }
+  .crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+  .crumbs li + li::before {
+    content: '/';
+    margin-right: 6px;
+    color: var(--muted-2);
+  }
+  .crumbs a:hover {
+    color: var(--blue);
+  }
+  .crumbs span {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  h1 {
+    font-size: clamp(1.9rem, 4vw, 2.9rem);
+    margin-bottom: 10px;
+  }
+  .ph-text {
+    color: var(--muted);
+    font-size: 1.1rem;
+    max-width: 62ch;
+    margin: 0;
+  }
+</style>
