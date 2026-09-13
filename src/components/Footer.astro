@@ -49,7 +49,8 @@ const year = new Date().getFullYear();
       <div>
         <h4>Contacto</h4>
         <ul class="contact">
-          <li><Icon name="whatsapp" size={18} /> <a href={whatsappLink('Hola')} target="_blank" rel="noopener">+{SITE.whatsapp}</a></li>
+          <li><Icon name="whatsapp" size={18} /> <a href={whatsappLink('Hola')} target="_blank" rel="noopener">{SITE.phone}</a></li>
+          <li><Icon name="phone" size={18} /> <a href={SITE.phoneHref}>{SITE.phone}</a></li>
           <li><Icon name="mail" size={18} /> <a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
           <li><Icon name="map-pin" size={18} /> <span>{SITE.city}</span></li>
           <li><Icon name="clock" size={18} /> <span>Lun a Vie · 9:00 a 19:00</span></li>

@@ -9,7 +9,9 @@ export const SITE = {
   tagline: 'Impresión 3D en Chile: llaveros, soportes, figuras anime y piezas personalizadas',
   description:
     'Catálogo de productos impresos en 3D: llaveros, soportes de celular, figuras de anime, dibujos y decoración. Envíos a todo Chile. Pedidos personalizados.',
-  whatsapp: '56912345678', // sin "+" ni espacios
+  whatsapp: '56968480167', // sin "+" ni espacios
+  phone: '+56 9 6848 0167', // formato para mostrar
+  phoneHref: 'tel:+56968480167',
   email: 'contacto@productos3d.cl',
   instagram: 'https://instagram.com/productos3d.cl',
   city: 'Temuco, Chile',

@@ -98,7 +98,11 @@ const values = [
         <ul class="contact-list">
           <li>
             <Icon name="whatsapp" size={22} />
-            <div><small>WhatsApp</small><a href={whatsappLink('Hola')} target="_blank" rel="noopener">+{SITE.whatsapp}</a></div>
+            <div><small>WhatsApp</small><a href={whatsappLink('Hola')} target="_blank" rel="noopener">{SITE.phone}</a></div>
+          </li>
+          <li>
+            <Icon name="phone" size={22} />
+            <div><small>Teléfono</small><a href={SITE.phoneHref}>{SITE.phone}</a></div>
           </li>
           <li>
             <Icon name="mail" size={22} />

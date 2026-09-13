@@ -25,6 +25,8 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
       <span><Icon name="zap" size={16} /> Cotización en menos de 24 h</span>
       <span class="sep hide-sm"></span>
       <span class="hide-sm"><Icon name="map-pin" size={16} /> {SITE.city}</span>
+      <span class="sep"></span>
+      <a class="topbar-phone" href={SITE.phoneHref}><Icon name="phone" size={16} /> {SITE.phone}</a>
     </div>
   </div>
 
@@ -161,6 +163,18 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
     gap: 14px;
     height: 36px;
   }
+  .topbar-phone {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: inherit;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .topbar-phone:hover {
+    text-decoration: underline;
+  }
+
   .topbar-inner span {
     display: inline-flex;
     align-items: center;
