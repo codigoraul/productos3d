@@ -18,6 +18,32 @@ const steps = [
   { icon: 'truck', title: 'Lo recibes en tu casa', text: 'Envíos a todo Chile por Starken o Chilexpress. Retiro en Temuco sin costo.' },
 ];
 
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: SITE.name,
+    url: SITE.url + '/',
+    inLanguage: 'es-CL',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    '@id': SITE.url + '/#negocio',
+    name: SITE.name,
+    url: SITE.url + '/',
+    logo: SITE.url + '/logo.png',
+    image: SITE.url + '/logo.png',
+    description: SITE.description,
+    telephone: SITE.phoneHref.replace('tel:', ''),
+    email: SITE.email,
+    address: { '@type': 'PostalAddress', addressLocality: 'Temuco', addressRegion: 'Región de La Araucanía', addressCountry: 'CL' },
+    areaServed: { '@type': 'Country', name: 'Chile' },
+    sameAs: [SITE.instagram],
+    priceRange: '$',
+  },
+];
+
 const perks = [
   { icon: 'shield', title: 'Calidad garantizada', text: 'Si llega dañado, lo reimprimimos sin costo.' },
   { icon: 'palette', title: '+20 colores', text: 'PLA, PETG, TPU flexible y resina.' },
@@ -26,7 +52,8 @@ const perks = [
 ];
 ---
 
-<BaseLayout title={SITE.tagline} suffix={false}>
+<BaseLayout title={SITE.tagline} suffix={false} jsonLd={jsonLd}>
+  <h1 class="sr-only">Productos impresos en 3D en Chile: llaveros, soportes de celular, figuras anime y piezas personalizadas</h1>
   <HeroSlider />
 
   <!-- Categorías -->

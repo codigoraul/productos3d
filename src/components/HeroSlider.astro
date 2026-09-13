@@ -69,7 +69,7 @@ const fallbackBg = '/slider/personalizados.webp';
               <span class="slide-kicker">
                 <Icon name={s.icon} size={16} /> {s.name} · {s.count} productos
               </span>
-              <h1 class="slide-title">{headlines[s.slug] ?? s.name}</h1>
+              <h2 class="slide-title">{headlines[s.slug] ?? s.name}</h2>
               <p class="slide-desc">{s.description}</p>
               <div class="slide-actions">
                 <a href={`/categorias/${s.slug}`} class="btn btn-primary btn-lg">
