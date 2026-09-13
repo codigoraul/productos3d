@@ -58,13 +58,21 @@ const year = new Date().getFullYear();
     </div>
 
     <div class="footer-bottom">
-      <span>© {year} {SITE.name} · {SITE.domain}</span>
+      <span>© <a href="https://diseñopaginas.cl" target="_blank" rel="noopener" class="year-link">{year}</a> {SITE.name} · {SITE.domain}</span>
       <span>Envíos a todo Chile · Pago por transferencia y WebPay</span>
     </div>
   </div>
 </footer>
 
 <style>
+  .year-link {
+    color: inherit;
+    text-decoration: none;
+  }
+  .year-link:hover {
+    text-decoration: underline;
+  }
+
   .footer {
     background: var(--ink);
     color: rgba(255, 255, 255, 0.75);
