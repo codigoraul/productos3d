@@ -42,6 +42,22 @@ export const categories: Category[] = [
     icon: 'home',
   },
   {
+    id: 7,
+    slug: 'figuras',
+    name: 'Figuras',
+    description: 'Figuras de colección, personajes y esculturas impresas en 3D: piezas únicas para escritorio, repisa o regalo.',
+    accent: '#0891B2',
+    icon: 'star',
+  },
+  {
+    id: 8,
+    slug: 'fidget-y-juguetes',
+    name: 'Fidget y juguetes',
+    description: 'Cubos infinitos, articulados y juguetes antiestrés impresos en 3D. Resistentes y listos para jugar.',
+    accent: '#16A34A',
+    icon: 'zap',
+  },
+  {
     id: 6,
     slug: 'personalizados',
     name: 'Personalizados',

@@ -44,6 +44,19 @@ export async function getRelatedProducts(product: Product, limit = 4): Promise<P
     .slice(0, limit);
 }
 
+/**
+ * Foto representativa de una categoría: la miniatura definida en WooCommerce
+ * (Productos → Categorías → Miniatura) o, si no hay, la foto del primer producto
+ * de la categoría (destacados primero).
+ */
+export async function getCategoryImage(category: Category): Promise<{ src: string; alt: string } | undefined> {
+  if (category.image) return { src: category.image, alt: category.name };
+  const products = await getProductsByCategory(category.slug);
+  const withImage = products.filter((p) => p.images.length > 0);
+  const pick = withImage.find((p) => p.featured) ?? withImage[0];
+  return pick ? { src: pick.images[0].src, alt: pick.images[0].alt || pick.name } : undefined;
+}
+
 /** Conteo de productos por categoría (para chips y cards). */
 export async function getCategoryCounts(): Promise<Record<string, number>> {
   if (wcEnabled) return fetchCategoryCounts();

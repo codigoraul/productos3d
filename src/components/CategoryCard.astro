@@ -1,6 +1,7 @@
 ---
 import Icon from '@/components/Icon.astro';
 import type { Category } from '@/lib/types';
+import { getCategoryImage } from '@/lib/catalog';
 
 interface Props {
   category: Category;
@@ -8,17 +9,31 @@ interface Props {
   variant?: 'tile' | 'wide';
 }
 const { category: c, count, variant = 'tile' } = Astro.props;
+const photo = await getCategoryImage(c);
 ---
 
-<a href={`/categorias/${c.slug}`} class:list={['card cc', variant]} style={`--c:${c.accent}`}>
+<a href={`/categorias/${c.slug}`} class:list={['card cc', variant, { 'has-photo': !!photo }]} style={`--c:${c.accent}`}>
   <span class="cc-bg"></span>
-  <span class="cc-icon"><Icon name={c.icon} size={variant === 'wide' ? 34 : 28} stroke={1.8} /></span>
-  <span class="cc-text">
-    <strong>{c.name}</strong>
-    {count !== undefined && <small>{count} {count === 1 ? 'producto' : 'productos'}</small>}
-    {variant === 'wide' && <p>{c.description}</p>}
+
+  <span class="cc-media">
+    {photo ? (
+      <img src={photo.src} alt={photo.alt} loading="lazy" decoding="async" width={variant === 'wide' ? 640 : 160} height={variant === 'wide' ? 360 : 160} />
+    ) : (
+      <span class="cc-ph"><Icon name={c.icon} size={30} stroke={1.8} /></span>
+    )}
+    {photo && (
+      <span class="cc-badge" aria-hidden="true"><Icon name={c.icon} size={14} stroke={2.2} /></span>
+    )}
   </span>
-  <span class="cc-arrow"><Icon name="arrow-right" size={18} /></span>
+
+  <span class="cc-body">
+    <span class="cc-text">
+      <strong>{c.name}</strong>
+      {count !== undefined && <small>{count} {count === 1 ? 'producto' : 'productos'}</small>}
+      {variant === 'wide' && c.description && <p>{c.description}</p>}
+    </span>
+    <span class="cc-arrow"><Icon name="arrow-right" size={18} /></span>
+  </span>
 </a>
 
 <style>
@@ -27,13 +42,9 @@ const { category: c, count, variant = 'tile' } = Astro.props;
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 20px;
+    padding: 16px;
     overflow: hidden;
     color: var(--ink);
-  }
-  .cc.wide {
-    align-items: flex-start;
-    padding: 26px;
   }
   .cc-bg {
     position: absolute;
@@ -45,33 +56,66 @@ const { category: c, count, variant = 'tile' } = Astro.props;
   .cc:hover .cc-bg {
     opacity: 1;
   }
-  .cc-icon {
+
+  /* --- Media: foto (o icono si no hay foto) --- */
+  .cc-media {
     position: relative;
     flex: none;
+    width: 76px;
+    height: 76px;
+    border-radius: 18px;
+    overflow: visible;
+  }
+  .cc-media img,
+  .cc-ph {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    object-fit: cover;
+    background: color-mix(in srgb, var(--c) 8%, #fff);
+    transition: transform 0.4s var(--ease);
+  }
+  .cc-ph {
     display: grid;
     place-items: center;
-    width: 56px;
-    height: 56px;
-    border-radius: 16px;
-    background: color-mix(in srgb, var(--c) 12%, #fff);
     color: var(--c);
-    transition:
-      background 0.3s,
-      color 0.3s,
-      transform 0.3s var(--ease);
+    background: color-mix(in srgb, var(--c) 12%, #fff);
   }
-  .cc.wide .cc-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 18px;
+  .cc:hover .cc-media img {
+    transform: scale(1.06);
   }
-  .cc:hover .cc-icon {
+  .cc-media img {
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04) inset;
+  }
+  .cc-badge {
+    position: absolute;
+    right: -6px;
+    bottom: -6px;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
     background: var(--c);
     color: #fff;
-    transform: rotate(-6deg) scale(1.05);
+    box-shadow: 0 0 0 3px #fff;
+    transition: transform 0.3s var(--ease);
+  }
+  .cc:hover .cc-badge {
+    transform: rotate(-8deg) scale(1.08);
+  }
+
+  /* --- Texto --- */
+  .cc-body {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
   }
   .cc-text {
-    position: relative;
     flex: 1;
     min-width: 0;
   }
@@ -80,9 +124,6 @@ const { category: c, count, variant = 'tile' } = Astro.props;
     font-size: 1.05rem;
     font-weight: 800;
     letter-spacing: -0.01em;
-  }
-  .cc.wide .cc-text strong {
-    font-size: 1.25rem;
   }
   .cc-text small {
     display: block;
@@ -98,7 +139,6 @@ const { category: c, count, variant = 'tile' } = Astro.props;
     line-height: 1.55;
   }
   .cc-arrow {
-    position: relative;
     flex: none;
     display: grid;
     place-items: center;
@@ -118,5 +158,42 @@ const { category: c, count, variant = 'tile' } = Astro.props;
     border-color: var(--ink);
     color: #fff;
     transform: translateX(3px);
+  }
+
+  /* --- Variante ancha (/categorias): foto arriba a todo el ancho --- */
+  .cc.wide {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+  }
+  .cc.wide .cc-media {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    border-radius: 0;
+    overflow: hidden;
+  }
+  .cc.wide .cc-media img,
+  .cc.wide .cc-ph {
+    border-radius: 0;
+  }
+  .cc.wide .cc-badge {
+    right: auto;
+    left: 16px;
+    bottom: -14px;
+    width: 34px;
+    height: 34px;
+    box-shadow: 0 0 0 4px #fff;
+  }
+  .cc.wide .cc-body {
+    padding: 26px 22px 22px;
+    align-items: flex-start;
+  }
+  .cc.wide .cc-text strong {
+    font-size: 1.25rem;
+  }
+  .cc.wide .cc-arrow {
+    margin-top: 2px;
   }
 </style>
