@@ -9,7 +9,7 @@
  * Si WP no está configurado o la petición falla, se devuelve null y las páginas
  * usan sus valores por defecto.
  */
-import { WP_URL, wcEnabled } from '@/lib/wc';
+import { WP_URL, wcEnabled, BUILD_ID, NO_CACHE_HEADERS } from '@/lib/wc';
 
 export interface YoastSeo {
   title?: string;
@@ -30,9 +30,9 @@ const cache = new Map<string, Promise<YoastSeo | null>>();
 
 async function fetchYoast(path: string): Promise<YoastSeo | null> {
   if (!wcEnabled) return null;
-  const url = `${WP_URL}/wp-json/wp/v2/${path}?_fields=yoast_head_json`;
+  const url = `${WP_URL}/wp-json/wp/v2/${path}?_fields=yoast_head_json&_b=${BUILD_ID}`;
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, { headers: NO_CACHE_HEADERS, cache: 'no-store' });
     if (!res.ok) return null;
     const json = (await res.json()) as { yoast_head_json?: YoastHead };
     const y = json.yoast_head_json;

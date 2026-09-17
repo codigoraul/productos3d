@@ -14,6 +14,13 @@ export const wcEnabled = WP_URL.length > 0;
 
 const BASE = `${WP_URL}/wp-json/wc/store/v1`;
 const PER_PAGE = 100;
+/**
+ * Rompe-caché: el nginx del hosting cachea las respuestas comprimidas de la API
+ * (Vary: Accept-Encoding) y el build recibía listas viejas. Un valor único por
+ * build en la query y cabeceras no-cache garantizan datos frescos.
+ */
+export const BUILD_ID = String(Date.now());
+export const NO_CACHE_HEADERS = { Accept: 'application/json', 'Cache-Control': 'no-cache, no-store', Pragma: 'no-cache' };
 
 interface WcImage {
   id: number;
@@ -55,7 +62,7 @@ interface WcCategory {
 }
 
 async function getJson<T>(url: string): Promise<{ data: T; total: number }> {
-  const res = await fetch(url, { headers: { Accept: 'application/json' } });
+  const res = await fetch(url, { headers: NO_CACHE_HEADERS, cache: 'no-store' });
   if (!res.ok) throw new Error(`WooCommerce ${res.status} en ${url}`);
   const total = Number(res.headers.get('x-wp-total') ?? 0);
   return { data: (await res.json()) as T, total };
@@ -65,7 +72,7 @@ async function getJson<T>(url: string): Promise<{ data: T; total: number }> {
 async function getAll<T>(path: string, params: Record<string, string> = {}): Promise<T[]> {
   const out: T[] = [];
   for (let page = 1; page < 50; page++) {
-    const qs = new URLSearchParams({ per_page: String(PER_PAGE), page: String(page), ...params });
+    const qs = new URLSearchParams({ per_page: String(PER_PAGE), page: String(page), ...params, _b: BUILD_ID });
     const { data } = await getJson<T[]>(`${BASE}${path}?${qs}`);
     out.push(...data);
     if (data.length < PER_PAGE) break;
