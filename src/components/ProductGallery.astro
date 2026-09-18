@@ -1,8 +1,9 @@
 ---
 /**
- * Galería de la ficha de producto: imagen principal + miniaturas.
+ * Galería de la ficha de producto: imagen principal + miniaturas + lightbox.
  * Usa todas las imágenes de WooCommerce (destacada + galería del producto).
- * Con 0 imágenes cae al placeholder de ProductVisual; con 1 no muestra miniaturas.
+ * Con 0 imágenes cae al placeholder de ProductVisual; con 1 no muestra miniaturas
+ * (pero el lightbox sigue funcionando).
  */
 import Icon from '@/components/Icon.astro';
 import ProductVisual from '@/components/ProductVisual.astro';
@@ -26,7 +27,7 @@ const many = images.length > 1;
   ) : (
     <div class="pg" data-gallery>
       <div class="pg-main card">
-        <div class="pg-track">
+        <div class="pg-track" role="button" tabindex="-1" aria-label="Ampliar foto">
           {images.map((img, i) => (
             <img
               class="pg-img"
@@ -39,6 +40,11 @@ const many = images.length > 1;
             />
           ))}
         </div>
+
+        <button type="button" class="pg-zoom" data-zoom aria-label="Ampliar foto">
+          <Icon name="maximize" size={18} />
+        </button>
+
         {many && (
           <>
             <button type="button" class="pg-nav prev" data-prev aria-label="Foto anterior">
@@ -69,6 +75,28 @@ const many = images.length > 1;
           ))}
         </div>
       )}
+
+      <dialog class="lb" data-lightbox aria-label={`Fotos de ${name}`}>
+        <div class="lb-inner">
+          <img class="lb-img" src="" alt="" decoding="async" />
+
+          <button type="button" class="lb-btn close" data-lb-close aria-label="Cerrar">
+            <Icon name="close" size={22} />
+          </button>
+
+          {many && (
+            <>
+              <button type="button" class="lb-btn prev" data-lb-prev aria-label="Foto anterior">
+                <Icon name="chevron-left" size={24} />
+              </button>
+              <button type="button" class="lb-btn next" data-lb-next aria-label="Foto siguiente">
+                <Icon name="chevron-right" size={24} />
+              </button>
+              <span class="lb-count" aria-live="polite"><b data-lb-current>1</b> / {images.length}</span>
+            </>
+          )}
+        </div>
+      </dialog>
     </div>
   )
 }
@@ -89,6 +117,7 @@ const many = images.length > 1;
     height: 100%;
     transition: transform 0.45s var(--ease);
     will-change: transform;
+    cursor: zoom-in;
   }
   .pg-img {
     flex: 0 0 100%;
@@ -126,6 +155,34 @@ const many = images.length > 1;
     opacity: 1;
   }
   .pg-nav:hover {
+    background: #fff;
+    color: var(--blue);
+  }
+  .pg-zoom {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--ink);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
+    border: 0;
+    cursor: zoom-in;
+    opacity: 0;
+    transition:
+      opacity 0.25s,
+      background 0.2s,
+      color 0.2s;
+  }
+  .pg-main:hover .pg-zoom,
+  .pg-zoom:focus-visible {
+    opacity: 1;
+  }
+  .pg-zoom:hover {
     background: #fff;
     color: var(--blue);
   }
@@ -172,19 +229,145 @@ const many = images.length > 1;
     border-color: var(--blue);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 18%, transparent);
   }
+
+  /* ---------- Lightbox ---------- */
+  .lb {
+    width: 100vw;
+    height: 100dvh;
+    max-width: 100vw;
+    max-height: 100dvh;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    overflow: hidden;
+  }
+  .lb::backdrop {
+    background: rgba(17, 19, 22, 0.93);
+    backdrop-filter: blur(3px);
+  }
+  .lb-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    padding: 64px 16px;
+    box-sizing: border-box;
+  }
+  .lb-img {
+    max-width: min(100%, 1400px);
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 12px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+    cursor: zoom-out;
+    touch-action: pan-y;
+  }
+  .lb-btn {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+    cursor: pointer;
+    transition:
+      background 0.2s,
+      transform 0.2s var(--ease);
+  }
+  .lb-btn:hover {
+    background: rgba(255, 255, 255, 0.28);
+  }
+  .lb-btn.close {
+    top: 14px;
+    right: 14px;
+  }
+  .lb-btn.prev {
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .lb-btn.next {
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .lb-btn.prev:hover {
+    transform: translateY(-50%) scale(1.06);
+  }
+  .lb-btn.next:hover {
+    transform: translateY(-50%) scale(1.06);
+  }
+  .lb-count {
+    position: absolute;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .lb[open] {
+    animation: lb-in 0.22s var(--ease);
+  }
+  .lb[open]::backdrop {
+    animation: lb-fade 0.25s ease;
+  }
+  @keyframes lb-in {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+  }
+  @keyframes lb-fade {
+    from {
+      opacity: 0;
+    }
+  }
+
   @media (max-width: 900px) {
     .pg-nav {
       opacity: 1;
       width: 36px;
       height: 36px;
     }
+    .pg-zoom {
+      opacity: 1;
+      width: 34px;
+      height: 34px;
+    }
     .pg-thumbs {
       grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    }
+    .lb-inner {
+      padding: 56px 8px;
+    }
+    .lb-btn {
+      width: 42px;
+      height: 42px;
+    }
+    .lb-btn.prev {
+      left: 8px;
+    }
+    .lb-btn.next {
+      right: 8px;
     }
   }
   @media (prefers-reduced-motion: reduce) {
     .pg-track {
       transition: none;
+    }
+    .lb[open],
+    .lb[open]::backdrop {
+      animation: none;
     }
   }
 </style>
@@ -195,11 +378,13 @@ const many = images.length > 1;
     const imgs = Array.from(root.querySelectorAll<HTMLImageElement>('.pg-img'));
     const thumbs = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-thumb]'));
     const current = root.querySelector<HTMLElement>('[data-current]');
+    const main = root.querySelector<HTMLElement>('.pg-main')!;
     const total = imgs.length;
-    if (total < 2) return;
+    if (total === 0) return;
     let index = 0;
 
     const go = (i: number) => {
+      if (total < 2) return;
       index = (i + total) % total;
       track.style.transform = `translateX(-${index * 100}%)`;
       imgs.forEach((img, k) => img.setAttribute('aria-hidden', k === index ? 'false' : 'true'));
@@ -215,19 +400,27 @@ const many = images.length > 1;
     root.querySelector('[data-next]')?.addEventListener('click', () => go(index + 1));
     thumbs.forEach((t, k) => t.addEventListener('click', () => go(k)));
 
-    const main = root.querySelector<HTMLElement>('.pg-main')!;
     main.tabIndex = 0;
     main.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowLeft') go(index - 1);
       if (e.key === 'ArrowRight') go(index + 1);
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openLb(index);
+      }
     });
 
-    // Swipe táctil
+    // Arrastre/swipe en la imagen principal. Un clic sin arrastre abre el lightbox.
     let startX = 0;
     let dragging = false;
+    let moved = false;
     main.addEventListener('pointerdown', (e) => {
       startX = e.clientX;
       dragging = true;
+      moved = false;
+    });
+    main.addEventListener('pointermove', (e) => {
+      if (dragging && Math.abs(e.clientX - startX) > 8) moved = true;
     });
     main.addEventListener('pointerup', (e) => {
       if (!dragging) return;
@@ -236,6 +429,66 @@ const many = images.length > 1;
       if (Math.abs(dx) > 40) go(dx < 0 ? index + 1 : index - 1);
     });
     main.addEventListener('pointercancel', () => (dragging = false));
+
+    /* ---------- Lightbox ---------- */
+    const lb = root.querySelector<HTMLDialogElement>('[data-lightbox]');
+    const lbImg = lb?.querySelector<HTMLImageElement>('.lb-img');
+    const lbCount = lb?.querySelector<HTMLElement>('[data-lb-current]');
+    const photos = imgs.map((i) => ({ src: i.currentSrc || i.src, alt: i.alt }));
+    let lbIndex = 0;
+
+    function paint(i: number) {
+      if (!lbImg) return;
+      lbIndex = (i + total) % total;
+      const p = photos[lbIndex];
+      lbImg.src = p.src;
+      lbImg.alt = p.alt;
+      if (lbCount) lbCount.textContent = String(lbIndex + 1);
+    }
+
+    function openLb(i: number) {
+      if (!lb || typeof lb.showModal !== 'function') return;
+      paint(i);
+      if (!lb.open) lb.showModal();
+    }
+
+    track.addEventListener('click', () => {
+      if (!moved) openLb(index);
+    });
+    root.querySelector('[data-zoom]')?.addEventListener('click', () => openLb(index));
+
+    if (lb) {
+      lb.querySelector('[data-lb-close]')?.addEventListener('click', () => lb.close());
+      lb.querySelector('[data-lb-prev]')?.addEventListener('click', () => paint(lbIndex - 1));
+      lb.querySelector('[data-lb-next]')?.addEventListener('click', () => paint(lbIndex + 1));
+      lbImg?.addEventListener('click', () => lb.close());
+      // Clic fuera de la foto (el fondo del diálogo) cierra.
+      lb.addEventListener('click', (e) => {
+        if (e.target === lb || (e.target as HTMLElement).classList.contains('lb-inner')) lb.close();
+      });
+      lb.addEventListener('keydown', (e) => {
+        if (total < 2) return;
+        if (e.key === 'ArrowLeft') paint(lbIndex - 1);
+        if (e.key === 'ArrowRight') paint(lbIndex + 1);
+      });
+      // Al cerrar, la galería queda en la foto que se estaba viendo.
+      lb.addEventListener('close', () => go(lbIndex));
+
+      // Swipe dentro del lightbox
+      let lbStart = 0;
+      let lbDrag = false;
+      lb.addEventListener('pointerdown', (e) => {
+        lbStart = e.clientX;
+        lbDrag = true;
+      });
+      lb.addEventListener('pointerup', (e) => {
+        if (!lbDrag) return;
+        lbDrag = false;
+        const dx = e.clientX - lbStart;
+        if (total > 1 && Math.abs(dx) > 40) paint(dx < 0 ? lbIndex + 1 : lbIndex - 1);
+      });
+      lb.addEventListener('pointercancel', () => (lbDrag = false));
+    }
   }
 
   document.querySelectorAll<HTMLElement>('[data-gallery]').forEach(initGallery);
