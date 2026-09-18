@@ -1,0 +1,203 @@
+---
+/**
+ * Footer de landing: contacto, anclas de la página y un solo enlace discreto
+ * al catálogo principal (productos3d.cl).
+ */
+import Icon from '@/components/Icon.astro';
+import { SITE, whatsappLink } from '@/config';
+
+interface Props {
+  nav: { href: string; label: string }[];
+}
+const { nav } = Astro.props;
+const year = new Date().getFullYear();
+---
+
+<footer class="lf">
+  <div class="container lf-grid">
+    <div>
+      <a href="#hero" class="lf-brand">
+        <img src="/logo.png" alt={SITE.name} width="52" height="52" />
+        <span>Productos<b>3D</b></span>
+      </a>
+      <p class="lf-text">
+        Merchandising y productos personalizados impresos en 3D para empresas. Fabricado en {SITE.city}, con envíos a
+        todo el país.
+      </p>
+      <div class="lf-social">
+        <a href={SITE.instagram} target="_blank" rel="noopener" aria-label="Instagram"><Icon name="instagram" /></a>
+        <a href={whatsappLink('Hola')} target="_blank" rel="noopener" aria-label="WhatsApp"><Icon name="whatsapp" /></a>
+        <a href={`mailto:${SITE.email}`} aria-label="Correo"><Icon name="mail" /></a>
+      </div>
+    </div>
+
+    <div>
+      <h4>En esta página</h4>
+      <ul>
+        {nav.map((n) => <li><a href={n.href}>{n.label}</a></li>)}
+      </ul>
+    </div>
+
+    <div>
+      <h4>Contacto</h4>
+      <ul class="lf-contact">
+        <li><Icon name="whatsapp" size={18} /> <a href={whatsappLink('Hola')} target="_blank" rel="noopener">{SITE.phone}</a></li>
+        <li><Icon name="mail" size={18} /> <a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
+        <li><Icon name="map-pin" size={18} /> <span>{SITE.city}</span></li>
+        <li><Icon name="clock" size={18} /> <span>Lun a Vie · 9:00 a 19:00</span></li>
+      </ul>
+    </div>
+
+    <div>
+      <h4>También</h4>
+      <a class="lf-related" href="/productos">
+        <Icon name="cube" size={20} />
+        <span><strong>Catálogo productos3d.cl</strong><small>Llaveros, soportes, figuras y piezas personalizadas para particulares</small></span>
+        <Icon name="arrow-right" size={16} />
+      </a>
+    </div>
+  </div>
+
+  <div class="container lf-bottom">
+    <span>© <a href="https://diseñopaginas.cl" target="_blank" rel="noopener" class="year-link">{year}</a> {SITE.name} · {SITE.domain}</span>
+    <span>Factura electrónica · Orden de compra · Envíos a todo Chile</span>
+  </div>
+</footer>
+
+<style>
+  .lf {
+    background: var(--ink);
+    color: rgba(255, 255, 255, 0.82);
+    padding: 56px 0 0;
+  }
+  .lf-grid {
+    display: grid;
+    grid-template-columns: 1.3fr 0.8fr 1fr 1.1fr;
+    gap: 40px;
+  }
+  .lf h4 {
+    color: #fff;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .lf ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .lf li {
+    margin: 8px 0;
+  }
+  .lf a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .lf a:hover {
+    color: #fff;
+  }
+  .lf-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: #fff;
+  }
+  .lf-brand img {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: #fff;
+  }
+  .lf-brand b {
+    color: #7fb0ff;
+  }
+  .lf-text {
+    margin: 16px 0 18px;
+    line-height: 1.65;
+    max-width: 38ch;
+  }
+  .lf-social {
+    display: flex;
+    gap: 8px;
+  }
+  .lf-social a {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .lf-social a:hover {
+    background: rgba(255, 255, 255, 0.16);
+  }
+  .lf-contact li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .lf-contact svg {
+    flex: none;
+    opacity: 0.8;
+  }
+  .lf-related {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: var(--radius);
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .lf-related:hover {
+    border-color: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .lf-related > svg:first-child {
+    flex: none;
+    color: #7fb0ff;
+  }
+  .lf-related > svg:last-child {
+    flex: none;
+    margin-left: auto;
+    opacity: 0.7;
+  }
+  .lf-related strong {
+    display: block;
+    color: #fff;
+  }
+  .lf-related small {
+    display: block;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    opacity: 0.8;
+  }
+  .lf-bottom {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 44px;
+    padding: 18px var(--gutter);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.6);
+  }
+  .year-link {
+    color: inherit;
+  }
+  @media (max-width: 1000px) {
+    .lf-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 640px) {
+    .lf-grid {
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+  }
+</style>

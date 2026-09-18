@@ -7,6 +7,8 @@ export default defineConfig({
   site: 'https://productos3d.cl',
   trailingSlash: 'ignore',
   build: { format: 'directory' },
+  // URLs cortas que siguen funcionando; la canónica es /merchandising-corporativo
+  redirects: { '/empresa': '/merchandising-corporativo', '/regalos-corporativos': '/merchandising-corporativo' },
   integrations: [
     sitemap({
       changefreq: 'weekly',

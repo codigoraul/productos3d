@@ -1,0 +1,202 @@
+---
+/**
+ * Header de landing: logo + menú de anclas dentro de la misma página + CTA.
+ * Sin enlaces al catálogo, para mantener al visitante en la landing.
+ */
+import Icon from '@/components/Icon.astro';
+import { SITE, whatsappLink } from '@/config';
+
+interface Props {
+  nav: { href: string; label: string }[];
+  cta?: string;
+}
+const { nav, cta = 'Hola, quiero cotizar merchandising corporativo impreso en 3D. Te cuento: ' } = Astro.props;
+---
+
+<header class="lh" id="lh">
+  <div class="container lh-inner">
+    <a href="#hero" class="lh-brand" aria-label={`${SITE.name} — merchandising corporativo`}>
+      <img src="/logo.png" alt={SITE.name} width="48" height="48" />
+      <span class="lh-brand-text">Productos<b>3D</b> <small>Empresas</small></span>
+    </a>
+
+    <nav class="lh-nav" aria-label="Secciones de la página">
+      <ul>
+        {nav.map((n) => <li><a href={n.href}>{n.label}</a></li>)}
+      </ul>
+    </nav>
+
+    <a class="btn btn-primary btn-sm lh-cta" href={whatsappLink(cta)} target="_blank" rel="noopener">
+      <Icon name="whatsapp" size={18} /> Cotizar
+    </a>
+
+    <button class="lh-burger" id="lh-burger" aria-label="Abrir menú" aria-expanded="false" aria-controls="lh-mobile">
+      <Icon name="menu" size={26} />
+    </button>
+  </div>
+
+  <div class="lh-mobile" id="lh-mobile" hidden>
+    <ul>
+      {nav.map((n) => <li><a href={n.href}>{n.label}</a></li>)}
+    </ul>
+    <a class="btn btn-whatsapp" href={whatsappLink(cta)} target="_blank" rel="noopener">
+      <Icon name="whatsapp" size={18} /> Cotizar por WhatsApp
+    </a>
+  </div>
+</header>
+
+<style>
+  .lh {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .lh-inner {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    height: 72px;
+  }
+  .lh-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ink);
+    text-decoration: none;
+    flex: none;
+  }
+  .lh-brand img {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+  }
+  .lh-brand-text {
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .lh-brand-text b {
+    color: var(--blue);
+  }
+  .lh-brand-text small {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: var(--bg-soft-2);
+  }
+  .lh-nav {
+    margin-left: auto;
+  }
+  .lh-nav ul {
+    display: flex;
+    gap: 4px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .lh-nav a {
+    display: block;
+    padding: 9px 13px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--ink-2);
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+  }
+  .lh-nav a:hover,
+  .lh-nav a.is-active {
+    background: var(--blue-50);
+    color: var(--blue);
+  }
+  .lh-cta {
+    flex: none;
+  }
+  .lh-burger {
+    display: none;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    cursor: pointer;
+    padding: 6px;
+  }
+  .lh-mobile {
+    border-top: 1px solid var(--border);
+    padding: 12px var(--gutter) 18px;
+    background: #fff;
+  }
+  .lh-mobile ul {
+    list-style: none;
+    margin: 0 0 12px;
+    padding: 0;
+  }
+  .lh-mobile a:not(.btn) {
+    display: block;
+    padding: 12px 4px;
+    font-weight: 700;
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .lh-mobile .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  @media (max-width: 1000px) {
+    .lh-nav {
+      display: none;
+    }
+    .lh-burger {
+      display: inline-flex;
+      margin-left: auto;
+    }
+    .lh-cta {
+      display: none;
+    }
+    .lh-brand-text small {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const burger = document.getElementById('lh-burger');
+  const mobile = document.getElementById('lh-mobile');
+  burger?.addEventListener('click', () => {
+    const open = burger.getAttribute('aria-expanded') === 'true';
+    burger.setAttribute('aria-expanded', String(!open));
+    if (mobile) mobile.hidden = open;
+  });
+  mobile?.querySelectorAll('a').forEach((a) =>
+    a.addEventListener('click', () => {
+      burger?.setAttribute('aria-expanded', 'false');
+      if (mobile) mobile.hidden = true;
+    }),
+  );
+
+  // Resaltar la sección visible en el menú
+  const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('.lh-nav a[href^="#"]'));
+  const targets = links.map((l) => document.querySelector<HTMLElement>(l.getAttribute('href')!)).filter(Boolean) as HTMLElement[];
+  if (targets.length) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return;
+          links.forEach((l) => l.classList.toggle('is-active', l.getAttribute('href') === '#' + e.target.id));
+        });
+      },
+      { rootMargin: '-40% 0px -55% 0px' },
+    );
+    targets.forEach((t) => io.observe(t));
+  }
+</script>
