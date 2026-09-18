@@ -160,6 +160,48 @@ const photo = await getCategoryImage(c);
     transform: translateX(3px);
   }
 
+  /* --- Mobile: en grillas de 2 columnas la fila horizontal queda muy angosta,
+     así que la variante "tile" pasa a foto arriba + texto abajo, igual que "wide" --- */
+  @media (max-width: 640px) {
+    .cc.tile {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      padding: 0;
+    }
+    .cc.tile .cc-media {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 4 / 3;
+      border-radius: 0;
+    }
+    .cc.tile .cc-media img,
+    .cc.tile .cc-ph {
+      border-radius: 0;
+    }
+    .cc.tile .cc-badge {
+      right: auto;
+      left: 14px;
+      bottom: -12px;
+      width: 28px;
+      height: 28px;
+      box-shadow: 0 0 0 3px #fff;
+    }
+    .cc.tile .cc-body {
+      padding: 22px 16px 18px;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .cc.tile .cc-text strong {
+      font-size: 1rem;
+    }
+    .cc.tile .cc-arrow {
+      width: 30px;
+      height: 30px;
+      margin-top: 2px;
+    }
+  }
+
   /* --- Variante ancha (/categorias): foto arriba a todo el ancho --- */
   .cc.wide {
     flex-direction: column;
