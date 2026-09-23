@@ -36,8 +36,7 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
   <div class="bar">
     <div class="container bar-inner">
       <a href="/" class="brand" aria-label={`${SITE.name} — inicio`}>
-        <img src="/logo.png" alt={SITE.name} width="56" height="56" />
-        <span class="brand-text">Productos<b>3D</b></span>
+        <img src="/logo-pro3d.svg" alt="Pro3d — productos impresos en 3D" width="137" height="46" />
       </a>
 
       <nav class="nav" aria-label="Principal">
@@ -75,11 +74,9 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
         </ul>
       </nav>
 
-      <form class="search" action="/productos" method="get" role="search">
-        <label for="header-q" class="sr-only">Buscar productos</label>
-        <Icon name="search" size={18} />
-        <input id="header-q" type="search" name="q" placeholder="Buscar llaveros, soportes, anime…" autocomplete="off" />
-      </form>
+      <button class="search-toggle" id="search-toggle" type="button" aria-label="Buscar productos" aria-expanded="false" aria-controls="search-panel">
+        <Icon name="search" size={20} />
+      </button>
 
       <a class="btn btn-primary btn-sm cta" href={whatsappLink('Hola, quiero cotizar un producto 3D.')} target="_blank" rel="noopener">
         <Icon name="whatsapp" size={18} /> Cotizar
@@ -88,6 +85,21 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
       <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false" aria-controls="mobile-menu">
         <Icon name="menu" size={26} />
       </button>
+    </div>
+
+    <div class="search-panel" id="search-panel" hidden>
+      <div class="container">
+        <form class="search" action="/productos" method="get" role="search">
+          <label for="header-q" class="sr-only">Buscar productos</label>
+          <Icon name="search" size={20} />
+          <input id="header-q" type="search" name="q" placeholder="¿Qué buscas? Llaveros, soportes, anime…" autocomplete="off" />
+          <button type="submit" class="btn btn-primary btn-sm">Buscar</button>
+        </form>
+        <div class="search-chips">
+          <span>Populares:</span>
+          {categories.slice(0, 5).map((c) => <a href={`/categorias/${c.slug}`}>{c.name}</a>)}
+        </div>
+      </div>
     </div>
   </div>
 
@@ -139,6 +151,26 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
     burger.setAttribute('aria-expanded', String(open));
     document.body.style.overflow = open ? 'hidden' : '';
     header.classList.toggle('menu-open', open);
+  });
+
+  // Buscador desplegable
+  const sToggle = document.getElementById('search-toggle')!;
+  const sPanel = document.getElementById('search-panel')!;
+  const sInput = document.getElementById('header-q') as HTMLInputElement;
+  const setSearch = (open: boolean) => {
+    sPanel.hidden = !open;
+    sToggle.setAttribute('aria-expanded', String(open));
+    header.classList.toggle('search-open', open);
+    if (open) requestAnimationFrame(() => sInput.focus());
+  };
+  sToggle.addEventListener('click', () => setSearch(sPanel.hidden));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !sPanel.hidden) { setSearch(false); sToggle.focus(); }
+    const t = e.target as HTMLElement;
+    if (e.key === '/' && sPanel.hidden && !/INPUT|TEXTAREA/.test(t.tagName)) { e.preventDefault(); setSearch(true); }
+  });
+  document.addEventListener('click', (e) => {
+    if (!sPanel.hidden && !sPanel.contains(e.target as Node) && !sToggle.contains(e.target as Node)) setSearch(false);
   });
 
   const onScroll = () => header.classList.toggle('is-scrolled', window.scrollY > 8);
@@ -193,6 +225,7 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
   }
 
   .bar {
+    position: relative;
     border-bottom: 1px solid var(--border);
     transition: box-shadow 0.25s;
   }
@@ -213,22 +246,15 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
     flex: none;
   }
   .brand img {
-    width: 56px;
-    height: 56px;
-    object-fit: contain;
-  }
-  .brand-text {
-    font-weight: 800;
-    font-size: 1.25rem;
-    letter-spacing: -0.02em;
-    color: var(--ink);
-  }
-  .brand-text b {
-    color: var(--blue);
+    width: auto;
+    height: 46px;
+    display: block;
   }
 
   .nav {
     flex: 1;
+    display: flex;
+    justify-content: center;
   }
   .nav ul {
     display: flex;
@@ -336,14 +362,57 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
     background: var(--blue-50) !important;
   }
 
-  /* Buscador */
+  /* Buscador: botón redondo + panel desplegable */
+  .search-toggle {
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: var(--bg-soft);
+    color: var(--ink-2);
+    cursor: pointer;
+    transition:
+      background 0.2s,
+      color 0.2s,
+      border-color 0.2s;
+  }
+  .search-toggle:hover,
+  .header.search-open .search-toggle {
+    color: var(--blue);
+    border-color: var(--blue);
+    background: var(--blue-50);
+  }
+  .search-panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 18px 30px rgba(43, 46, 51, 0.1);
+    padding: 18px 0 16px;
+    animation: search-drop 0.22s var(--ease);
+  }
+  .search-panel[hidden] {
+    display: none;
+  }
+  @keyframes search-drop {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+  }
   .search {
     display: flex;
     align-items: center;
-    gap: 8px;
-    width: 300px;
-    padding: 0 14px;
-    height: 44px;
+    gap: 10px;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 6px 0 18px;
+    height: 54px;
     border: 1.5px solid var(--border);
     border-radius: var(--radius-pill);
     background: var(--bg-soft);
@@ -364,6 +433,7 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
     background: none;
     outline: none;
     color: var(--ink);
+    font-size: 1rem;
     min-width: 0;
   }
   .search input::placeholder {
@@ -371,6 +441,28 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
   }
   .search input::-webkit-search-cancel-button {
     -webkit-appearance: none;
+  }
+  .search-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    max-width: 760px;
+    margin: 12px auto 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .search-chips a {
+    padding: 5px 12px;
+    border-radius: var(--radius-pill);
+    background: var(--bg-soft);
+    color: var(--ink-2);
+    font-weight: 600;
+  }
+  .search-chips a:hover {
+    background: var(--blue-50);
+    color: var(--blue);
   }
 
   .cta {
@@ -396,6 +488,8 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
   }
   .mobile-search {
     width: 100%;
+    height: 48px;
+    padding: 0 16px;
     margin-bottom: 20px;
   }
   .mobile-nav a {
@@ -441,19 +535,23 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
   }
 
   @media (max-width: 1180px) {
-    .search {
-      width: 220px;
+    .nav a {
+      padding: 10px 11px;
     }
   }
   @media (max-width: 1024px) {
     .nav,
-    .search,
     .cta {
       display: none;
     }
+    .search-toggle {
+      margin-left: auto;
+    }
     .burger {
       display: inline-grid;
-      margin-left: auto;
+    }
+    .search-chips {
+      display: none;
     }
     .bar-inner {
       height: 68px;
@@ -462,8 +560,8 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
       --header-h: 68px;
     }
     .brand img {
-      width: 48px;
-      height: 48px;
+      width: auto;
+      height: 38px;
     }
   }
   @media (max-width: 640px) {
