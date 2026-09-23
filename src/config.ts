@@ -13,7 +13,8 @@ export const SITE = {
   phone: '+56 9 6848 0167', // formato para mostrar
   phoneHref: 'tel:+56968480167',
   email: 'contacto@productos3d.cl',
-  instagram: 'https://instagram.com/productos3d.cl',
+  instagram: 'https://www.instagram.com/pro3d.cl',
+  instagramHandle: '@pro3d.cl',
   city: 'Temuco, Chile',
 } as const;
 
