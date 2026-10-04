@@ -208,7 +208,13 @@ const jsonLd = [
         {
           corpLines.map((l, i) => (
             <article class:list={['card line reveal', { hot: l.featured }]} style={`transition-delay:${(i % 3) * 80}ms`}>
-              <a class="line-media" href={wa(l.name.toLowerCase())} target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">
+              <a
+                class="line-media"
+                href={l.product ? `/productos/${l.product}/` : wa(l.name.toLowerCase())}
+                {...(l.product ? {} : { target: '_blank', rel: 'noopener' })}
+                tabindex="-1"
+                aria-hidden="true"
+              >
                 <img src={lineImage(l)} alt={l.name} width="1200" height="900" loading="lazy" decoding="async" />
                 {l.featured && <span class="line-tag">Más pedido</span>}
                 <span class="line-icon">
@@ -216,7 +222,7 @@ const jsonLd = [
                 </span>
               </a>
               <div class="line-body">
-              <h3>{l.name}</h3>
+              <h3>{l.product ? <a href={`/productos/${l.product}/`}>{l.name}</a> : l.name}</h3>
               <p class="line-text">{l.text}</p>
               <ul>
                 {l.bullets.map((b) => (
@@ -233,6 +239,11 @@ const jsonLd = [
                 </span>
                 <span class="line-min">mín. {l.min} {l.min === 1 ? 'unidad' : 'unidades'}</span>
               </div>
+              {l.product && (
+                <a class="btn btn-primary btn-sm line-cta" href={`/productos/${l.product}/`}>
+                  Ver producto <Icon name="arrow-right" size={16} />
+                </a>
+              )}
               <a class="btn btn-outline btn-sm line-cta" href={wa(l.name.toLowerCase())} target="_blank" rel="noopener">
                 Cotizar esta línea <Icon name="arrow-right" size={16} />
               </a>
@@ -640,6 +651,13 @@ const jsonLd = [
   .line h3 {
     font-size: 1.12rem;
     margin-bottom: 6px;
+  }
+  .line h3 a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .line h3 a:hover {
+    color: var(--blue);
   }
   .line-text {
     color: var(--muted);

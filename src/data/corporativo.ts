@@ -24,6 +24,8 @@ export interface CorpLine {
   featured?: boolean;
   /** Foto en public/empresa/<slug>.webp (1200×900). */
   image?: string;
+  /** Slug del producto en WooCommerce; si existe, la tarjeta enlaza a /productos/<slug>/. */
+  product?: string;
 }
 
 /** Ruta de la foto de una línea (convención: public/empresa/<slug>.webp). */
@@ -32,6 +34,7 @@ export const lineImage = (l: CorpLine) => l.image ?? `/empresa/${l.slug}.webp`;
 export const corpLines: CorpLine[] = [
   {
     slug: 'displays-qr',
+    product: 'display-qr-sobremesa-personalizado',
     icon: 'qr',
     name: 'Displays QR de sobremesa',
     text: 'Cartelitos para mesón o mesa con el QR de pago, Wi-Fi, carta digital o redes sociales.',
@@ -62,6 +65,7 @@ export const corpLines: CorpLine[] = [
   },
   {
     slug: 'llaveros',
+    product: 'llaveros-corporativos-personalizados',
     icon: 'key',
     name: 'Llaveros corporativos',
     text: 'Entrega masiva en ferias, aniversarios y eventos, con algo que la gente realmente usa.',
@@ -77,6 +81,7 @@ export const corpLines: CorpLine[] = [
   },
   {
     slug: 'posavasos',
+    product: 'posavasos-con-logo',
     icon: 'layers',
     name: 'Posavasos con logo',
     text: 'Set de 4 posavasos con su propio soporte, en los colores de la marca.',
