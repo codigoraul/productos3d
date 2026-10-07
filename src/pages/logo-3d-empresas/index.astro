@@ -1,98 +1,150 @@
 ---
 /**
- * Landing B2B (/merchandising-corporativo): merchandising y productos personalizados
- * para empresas, impresos en 3D. Cubre tanto lo que la empresa entrega (llaveros,
- * soportes, welcome packs) como lo que usa en su local (displays QR, señalética).
- * Objetivo: captar cotizaciones por volumen, no vender por carrito.
+ * Landing SEO (/logo-3d-empresas): el logo de la empresa convertido en pieza física
+ * impresa en 3D. Foco en formato pequeño/mediano (regalo a clientes, escritorio) y
+ * el logo grande para recepción como extra. Complementa /merchandising-corporativo:
+ * esta página responde a la búsqueda "logo 3d empresa"; la otra, a merchandising en general.
  */
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import Icon from '@/components/Icon.astro';
 import { SITE, whatsappLink } from '@/config';
-import { corpLines, volumeTiers, sectors, lineImage } from '@/data/corporativo';
+import { volumeTiers } from '@/data/corporativo';
 
 const clp = (n: number) => '$' + n.toLocaleString('es-CL');
 
 const landingNav = [
-  { href: '#lineas', label: 'Líneas' },
-  { href: '#porque', label: 'Por qué 3D' },
+  { href: '#formatos', label: 'Formatos' },
   { href: '#proceso', label: 'Proceso' },
   { href: '#volumen', label: 'Precios' },
+  { href: '#escritorio', label: 'Logos grandes' },
   { href: '#faq', label: 'Preguntas' },
   { href: '#cotizar', label: 'Cotizar' },
 ];
 
 const slides = [
-  { src: '/empresa/hero-escritorio.webp', caption: 'Escritorio y oficina', alt: 'Soporte de celular, display QR y portalápices impresos en 3D con logo corporativo sobre un escritorio' },
-  { src: '/empresa/hero-recepcion.webp', caption: 'Recepción y señalética', alt: 'Logotipo corporativo impreso en 3D sobre el mesón de recepción de una empresa' },
-  { src: '/empresa/hero-produccion.webp', caption: 'Producción por lotes', alt: 'Lote de soportes y llaveros impresos en 3D siendo empacados en cajas kraft' },
+  { src: '/empresa/hero-escritorio.webp', caption: 'Para escritorio y clientes', alt: 'Soporte de celular y piezas con logo corporativo impresas en 3D sobre un escritorio de oficina' },
+  { src: '/empresa/hero-recepcion.webp', caption: 'Para recepción', alt: 'Logo de empresa impreso en 3D sobre el mesón de recepción' },
+];
+
+const formats = [
+  {
+    slug: 'soportes-celular',
+    icon: 'phone',
+    name: 'Portacelular con logo',
+    text: 'El regalo que se usa todos los días y deja tu marca a la vista sobre el escritorio del cliente.',
+    bullets: ['Logo en relieve o bajo relieve en la base', 'Sirve para cualquier teléfono, con o sin carcasa', 'Ranura libre para el cable de carga'],
+    price: 2900,
+    unit: 'unidad',
+    min: 10,
+    featured: true,
+  },
+  {
+    slug: 'llaveros',
+    icon: 'key',
+    name: 'Llavero con logo 3D',
+    text: 'Tu logo en forma de llavero: el detalle de bajo costo para entregar en ferias, visitas y aniversarios.',
+    bullets: ['Logo recortado con la forma de tu marca', 'Colores cercanos a tu paleta corporativa', 'Nombre individual sin costo extra'],
+    price: 1490,
+    unit: 'unidad',
+    min: 25,
+  },
+  {
+    slug: 'portatarjetas',
+    icon: 'card',
+    name: 'Portatarjetas con logo',
+    text: 'Tarjetero de sobremesa con tu marca en el frente, para mesón de atención o escritorio de ventas.',
+    bullets: ['Capacidad para 30 a 40 tarjetas', 'Logo integrado en el frente', 'Se entrega listo para usar'],
+    price: 3900,
+    unit: 'unidad',
+    min: 10,
+  },
+  {
+    slug: 'posavasos',
+    icon: 'layers',
+    name: 'Posavasos con logo',
+    text: 'Set de 4 posavasos con soporte propio y tu logo en la cara superior, en los colores de la marca.',
+    bullets: ['Base antideslizante', 'Soporte apilable a juego', 'Terminación premium para regalo'],
+    price: 12900,
+    unit: 'set de 4',
+    min: 5,
+  },
+];
+
+const deskSizes = [
+  { name: 'Estándar', size: 'Hasta 20 cm de ancho', price: 32900, note: 'El tamaño más pedido para escritorio, mesón o vitrina.' },
+  { name: 'Grande', size: 'Hasta 28 cm de ancho', price: 39900, note: 'Más presencia para stands, ferias y puntos de venta.' },
+];
+
+const deskIncludes = [
+  'Logo en relieve con base integrada, listo para exhibir',
+  'Hasta 3 colores incluidos',
+  'Vectorización de tu logo sin costo si no tienes el archivo',
+  'Vista previa (render) antes de imprimir',
 ];
 
 const steps = [
-  { n: 1, title: 'Cuéntanos qué necesitas', text: 'Cantidad aproximada, para qué ocasión y tu logo en PNG, SVG o AI. Si no sabes qué producto elegir, te proponemos opciones según presupuesto.' },
-  { n: 2, title: 'Recibes propuesta y render', text: 'En menos de 24 horas te enviamos precio por unidad, plazo y una vista previa de tu logo aplicado en la pieza.' },
-  { n: 3, title: 'Aprobamos una muestra física', text: 'Imprimimos una unidad real con tu logo y te la enviamos antes de producir el lote. Nada se fabrica en serie sin tu visto bueno.' },
-  { n: 4, title: 'Producción y entrega', text: 'Fabricamos el lote, lo empacamos y lo despachamos a todo Chile. Emitimos factura electrónica.' },
+  { n: 1, title: 'Envías tu logo', text: 'Por WhatsApp, en SVG, AI, PDF o PNG de buena calidad. Si solo tienes una imagen pequeña, la vectorizamos sin costo.' },
+  { n: 2, title: 'Recibes cotización y render', text: 'Te enviamos precio por unidad, plazo y una vista previa de tu logo aplicado en la pieza que elijas.' },
+  { n: 3, title: 'Aprobamos una muestra', text: 'Imprimimos una unidad real y te la enviamos. No se fabrica el lote sin tu visto bueno.' },
+  { n: 4, title: 'Producción y entrega', text: 'Fabricamos el lote, lo empacamos y lo despachamos a todo Chile.' },
 ];
 
 const reasons = [
-  { icon: 'zap', title: 'Sin costo de matricería', text: 'El merchandising tradicional te cobra el molde antes de la primera unidad. En impresión 3D el molde no existe: pagas solo las piezas que necesitas.' },
-  { icon: 'filter', title: 'Desde 5 unidades', text: 'No necesitas pedir 500 artículos para que el precio tenga sentido. Producimos lotes chicos, desde 5 piezas, y repones cuando se te acaben.' },
-  { icon: 'users', title: 'Personalización uno a uno', text: 'Cada pieza puede llevar el nombre de una persona distinta sin recargo. Imposible de hacer con serigrafía o inyección.' },
-  { icon: 'truck', title: 'Producción local en Chile', text: 'Sin importaciones ni esperas de tres meses. Fabricamos acá y entregamos en días, no en semanas.' },
+  { icon: 'zap', title: 'Sin costo de molde', text: 'En impresión 3D no existe matricería: pagas solo las piezas que necesitas, aunque sean pocas.' },
+  { icon: 'filter', title: 'Desde pocas unidades', text: 'Puedes partir con 1 logo de escritorio o con un lote chico de 10 a 25 regalos, y reponer cuando quieras.' },
+  { icon: 'users', title: 'Un nombre por pieza', text: 'Cada regalo puede llevar el nombre del cliente o del equipo, sin recargo.' },
+  { icon: 'truck', title: 'Hecho en Chile', text: 'Producimos en Temuco y despachamos a todo el país, sin importaciones ni esperas largas.' },
 ];
 
 const faqs = [
   {
-    q: '¿Cuál es la cantidad mínima?',
-    a: 'Baja a propósito, porque muchas empresas parten con poco: desde 5 unidades en displays QR, posavasos y welcome packs, 10 en soportes y portatarjetas, 25 en llaveros y organizadores. Los trofeos se hacen desde 3 y los logotipos 3D desde 1. Si necesitas menos, igual escríbenos.',
+    q: '¿Qué es un logo 3D impreso para empresa?',
+    a: 'Es una pieza física: el logo de tu empresa fabricado en relieve con impresión 3D, que puedes poner en tu escritorio, recepción o entregar como regalo corporativo. No es un diseño digital con efecto 3D para redes o web.',
   },
   {
-    q: '¿En qué formato les envío el logo de mi empresa?',
-    a: 'Lo ideal es SVG, AI, EPS o PDF vectorial, porque permite el máximo detalle en el relieve. También trabajamos con PNG de buena resolución y fondo transparente. Si solo tienes el logo en baja calidad, lo vectorizamos nosotros sin costo.',
+    q: '¿Qué archivo necesito para hacer el logo en 3D?',
+    a: 'Lo ideal es un archivo vectorial (SVG, AI, EPS o PDF). También sirve un PNG de buena resolución con fondo transparente. Si solo tienes una imagen pequeña, la vectorizamos nosotros sin costo.',
   },
   {
-    q: '¿Cuánto demora un pedido para empresas?',
-    a: 'La muestra física llega en 3 a 5 días hábiles. Una vez aprobada, un pedido de hasta 25 unidades toma 3 a 7 días hábiles; lotes mayores los programamos y te confirmamos el plazo al cotizar. Para fin de año conviene cotizar en octubre.',
+    q: '¿Qué tamaños de logo se pueden hacer?',
+    a: 'Desde piezas pequeñas para regalar (llaveros y portacelulares), pasando por logos de escritorio de hasta 20 o 28 cm de ancho, hasta piezas grandes para recepción de hasta 60 cm, ensambladas. Los logos grandes se cotizan según tamaño y detalle.',
   },
   {
-    q: '¿Pueden usar los colores exactos de mi marca?',
-    a: 'Trabajamos con más de 20 colores de filamento y buscamos el más cercano a tu paleta. Para colores muy específicos hacemos pintura sobre la pieza. En la muestra física verás el color real antes de producir el lote.',
+    q: '¿Cuánto cuesta un logo 3D para empresa?',
+    a: 'Depende del tamaño, los colores y el detalle del logo. Como referencia: un llavero parte desde $1.490 por unidad en lotes de 25, un portacelular desde $2.900 en lotes de 10, un logo de escritorio cuesta $32.900 (hasta 20 cm) o $39.900 (hasta 28 cm), y un logo grande de recepción parte desde $49.000. Emitimos boleta. Cotiza gratis por WhatsApp con tu logo.',
   },
   {
-    q: '¿Emiten factura y trabajan con orden de compra?',
-    a: 'Sí, emitimos factura electrónica y aceptamos orden de compra. Trabajamos con empresas de cualquier tamaño, desde emprendimientos que recién se formalizan hasta compañías con departamento de compras. El estándar es 50 % al aprobar la muestra y 50 % contra entrega, aunque lo ajustamos según las condiciones de pago de tu empresa.',
+    q: '¿Hacen pedidos por volumen para regalos a clientes?',
+    a: 'Sí. Para llaveros desde 25 unidades, para portacelulares desde 10, y el precio por unidad baja a medida que aumenta la cantidad. Para regalos de fin de año conviene cotizar en octubre.',
   },
   {
-    q: '¿Incluyen el empaque?',
-    a: 'El empaque de protección para el envío va incluido. El empaque de presentación (caja kraft con ventana, viruta de papel y sello de tu marca) es opcional y se cotiza aparte: suele agregar entre $900 y $2.500 por unidad, y cambia por completo cómo se percibe la pieza.',
+    q: '¿Cuánto demora y despachan a todo Chile?',
+    a: 'La muestra física llega en 3 a 5 días hábiles. Un pedido de hasta 25 unidades toma 3 a 7 días hábiles una vez aprobada la muestra; lotes mayores los programamos y te confirmamos el plazo al cotizar. Despachamos a todo Chile.',
   },
 ];
 
-const wa = (line?: string) =>
+const wa = (what?: string) =>
   whatsappLink(
-    line
-      ? `Hola, quiero cotizar ${line} para mi empresa. Te cuento: `
-      : 'Hola, quiero cotizar merchandising corporativo impreso en 3D. Te cuento: ',
+    what
+      ? `Hola, quiero cotizar ${what} con el logo de mi empresa. Te cuento: `
+      : 'Hola, quiero cotizar mi logo de empresa impreso en 3D. Te cuento: ',
   );
 
 const jsonLd = [
   {
     '@context': 'https://schema.org',
     '@type': 'Service',
-    name: 'Merchandising corporativo impreso en 3D',
-    serviceType: 'Merchandising y productos personalizados para empresas',
+    name: 'Logo 3D impreso para empresas',
+    serviceType: 'Logos corporativos y regalos con logo impresos en 3D',
     provider: { '@type': 'LocalBusiness', name: SITE.name, url: SITE.url, telephone: SITE.phone, areaServed: 'CL' },
     areaServed: { '@type': 'Country', name: 'Chile' },
-    url: `${SITE.url}/merchandising-corporativo`,
+    url: `${SITE.url}/logo-3d-empresas`,
     description:
-      'Merchandising, señalética y productos personalizados impresos en 3D con el logo de tu empresa. Producción local en Chile desde 5 unidades, sin costo de matricería.',
-    offers: {
-      '@type': 'AggregateOffer',
-      priceCurrency: 'CLP',
-      lowPrice: 990,
-      highPrice: 49000,
-      offerCount: corpLines.length,
-    },
+      'Convertimos el logo de tu empresa en una pieza física impresa en 3D: logo de escritorio, portacelular, llavero o logo grande para recepción. Producción local en Chile.',
+    offers: [
+      { '@type': 'Offer', name: 'Logo 3D de escritorio (hasta 20 cm)', price: 32900, priceCurrency: 'CLP' },
+      { '@type': 'Offer', name: 'Logo 3D de escritorio (hasta 28 cm)', price: 39900, priceCurrency: 'CLP' },
+    ],
   },
   {
     '@context': 'https://schema.org',
@@ -108,15 +160,15 @@ const jsonLd = [
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Inicio', item: SITE.url },
-      { '@type': 'ListItem', position: 2, name: 'Empresas', item: `${SITE.url}/merchandising-corporativo` },
+      { '@type': 'ListItem', position: 2, name: 'Logo 3D para empresas', item: `${SITE.url}/logo-3d-empresas` },
     ],
   },
 ];
 ---
 
 <BaseLayout
-  title="Merchandising corporativo impreso en 3D"
-  description="Merchandising corporativo impreso en 3D con el logo de tu empresa: displays QR, soportes de celular, llaveros, señalética, tarjeteros y welcome packs. Desde 5 unidades, envíos a todo Chile."
+  title="Logo 3D para Empresas: Regalos Corporativos Impresos"
+  description="Convertimos el logo de tu empresa en una pieza 3D impresa: regalos para clientes, llaveros, portacelulares y logos grandes. Cotiza por WhatsApp con tu archivo."
   jsonLd={jsonLd}
   chrome="landing"
   landingNav={landingNav}
@@ -143,22 +195,22 @@ const jsonLd = [
     </div>
 
     <div class="container hero-inner">
-      <span class="eyebrow light">Para empresas</span>
-      <h1>Merchandising corporativo impreso en 3D</h1>
+      <span class="eyebrow light">Logo 3D para empresas</span>
+      <h1>Logo 3D de tu empresa en pieza impresa: regalos para clientes y escritorio</h1>
       <p class="hero-text">
-        Productos personalizados con el logo de tu empresa: para entregar a clientes y equipo, y para usar en tu
-        propio local. Fabricados en Chile, sin costo de matricería, desde 5 unidades y con muestra física antes de producir el lote.
+        Transformamos el logo de tu empresa en una pieza física impresa en 3D: un regalo que tus clientes usan todos los
+        días, un logo para tu escritorio o uno grande para tu recepción. Envíanos tu logo y te cotizamos por WhatsApp.
       </p>
       <div class="hero-actions">
         <a class="btn btn-whatsapp btn-lg" href={wa()} target="_blank" rel="noopener">
-          <Icon name="whatsapp" /> Cotizar por WhatsApp
+          <Icon name="whatsapp" /> Cotizar mi logo por WhatsApp
         </a>
-        <a class="btn btn-outline-light btn-lg" href="#lineas">Ver las líneas <Icon name="arrow-right" size={18} /></a>
+        <a class="btn btn-outline-light btn-lg" href="#formatos">Ver formatos <Icon name="arrow-right" size={18} /></a>
       </div>
       <ul class="hero-chips">
-        <li><Icon name="check" size={16} /> Desde 5 unidades</li>
-        <li><Icon name="check" size={16} /> Sin costo de matricería</li>
-        <li><Icon name="check" size={16} /> Factura electrónica</li>
+        <li><Icon name="check" size={16} /> Desde 1 unidad</li>
+        <li><Icon name="check" size={16} /> Sin costo de molde</li>
+        <li><Icon name="check" size={16} /> Muestra antes del lote</li>
       </ul>
 
       <div class="hero-nav">
@@ -187,66 +239,78 @@ const jsonLd = [
       <span><Icon name="check" size={18} /> Muestra física antes de producir</span>
       <span><Icon name="zap" size={18} /> Cotización en menos de 24 h</span>
       <span><Icon name="truck" size={18} /> Despacho a todo Chile</span>
-      <span><Icon name="shield" size={18} /> Factura electrónica y orden de compra</span>
+      <span><Icon name="shield" size={18} /> Producción local en Chile</span>
     </div>
   </section>
 
-  <!-- Líneas -->
-  <section class="section" id="lineas">
+  <!-- Qué es -->
+  <section class="section">
+    <div class="container narrow-md">
+      <div class="section-head">
+        <span class="eyebrow">Qué es</span>
+        <h2>Qué es un logo 3D impreso para empresa</h2>
+        <p>
+          Es tu logo hecho objeto: una pieza física en relieve, fabricada con impresión 3D en los colores de tu marca.
+          No es un diseño digital con efecto 3D para redes o web: es algo que se toca, se exhibe y se regala. Lo más
+          pedido es en formato pequeño o mediano, como regalo a clientes o pieza de escritorio; si necesitas un logo
+          grande para recepción, también lo hacemos.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Formatos -->
+  <section class="section bg-soft" id="formatos">
     <div class="container">
       <div class="section-head">
-        <span class="eyebrow">Para empresas</span>
-        <h2>Qué fabricamos para empresas</h2>
+        <span class="eyebrow">Formatos</span>
+        <h2>Tu logo en el objeto que tus clientes van a usar</h2>
         <p>
-          Sirve igual para una empresa que recién parte y necesita sus primeras piezas con marca, como para una que ya
-          tiene su identidad definida y quiere reponer. Los precios son referenciales por unidad, a partir de la cantidad
-          mínima de cada línea; el valor final depende del volumen, los colores y el detalle del logo.
+          Cada formato es una base probada a la que le aplicamos tu logo, así el precio por volumen es claro y la
+          cotización rápida. Los precios son referenciales por unidad; el valor final depende de la cantidad, los
+          colores y el detalle del logo.
         </p>
       </div>
 
-      <div class="grid grid-3">
+      <div class="grid grid-4">
         {
-          corpLines.map((l, i) => (
+          formats.map((l, i) => (
             <article class:list={['card line reveal', { hot: l.featured }]} style={`transition-delay:${(i % 3) * 80}ms`}>
-              <a
-                class="line-media"
-                href={l.product ? `/productos/${l.product}/` : wa(l.name.toLowerCase())}
-                {...(l.product ? {} : { target: '_blank', rel: 'noopener' })}
-                tabindex="-1"
-                aria-hidden="true"
-              >
-                <img src={lineImage(l)} alt={l.name} width="1200" height="900" loading="lazy" decoding="async" />
+              <a class="line-media" href={wa(l.name.toLowerCase())} target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">
+                <img src={`/empresa/${l.slug}.webp`} alt={`${l.name}: pieza impresa en 3D`} width="1200" height="900" loading="lazy" decoding="async" />
                 {l.featured && <span class="line-tag">Más pedido</span>}
                 <span class="line-icon">
                   <Icon name={l.icon} size={20} stroke={2} />
                 </span>
               </a>
               <div class="line-body">
-              <h3>{l.product ? <a href={`/productos/${l.product}/`}>{l.name}</a> : l.name}</h3>
-              <p class="line-text">{l.text}</p>
-              <ul>
-                {l.bullets.map((b) => (
-                  <li>
-                    <Icon name="check" size={16} /> {b}
-                  </li>
-                ))}
-              </ul>
-              <div class="line-foot">
-                <span class="line-price">
-                  <small>desde</small>
-                  <b>{clp(l.from)}</b>
-                  <small>por {l.unit}</small>
-                </span>
-                <span class="line-min">mín. {l.min} {l.min === 1 ? 'unidad' : 'unidades'}</span>
-              </div>
-              {l.product && (
-                <a class="btn btn-primary btn-sm line-cta" href={`/productos/${l.product}/`}>
-                  Ver producto <Icon name="arrow-right" size={16} />
+                <h3>{l.name}</h3>
+                <p class="line-text">{l.text}</p>
+                <ul>
+                  {l.bullets.map((b) => (
+                    <li>
+                      <Icon name="check" size={16} /> {b}
+                    </li>
+                  ))}
+                </ul>
+                <div class="line-foot">
+                  {l.price ? (
+                    <span class="line-price">
+                      <small>desde</small>
+                      <b>{clp(l.price)}</b>
+                      <small>por {l.unit}</small>
+                    </span>
+                  ) : (
+                    <span class="line-price">
+                      <b>A cotizar</b>
+                      <small>según tamaño y colores</small>
+                    </span>
+                  )}
+                  <span class="line-min">mín. {l.min} {l.min === 1 ? 'unidad' : 'unidades'}</span>
+                </div>
+                <a class="btn btn-outline btn-sm line-cta" href={wa(l.name.toLowerCase())} target="_blank" rel="noopener">
+                  Cotizar este formato <Icon name="arrow-right" size={16} />
                 </a>
-              )}
-              <a class="btn btn-outline btn-sm line-cta" href={wa(l.name.toLowerCase())} target="_blank" rel="noopener">
-                Cotizar esta línea <Icon name="arrow-right" size={16} />
-              </a>
               </div>
             </article>
           ))
@@ -254,9 +318,8 @@ const jsonLd = [
       </div>
 
       <p class="lines-note">
-        ¿Tu empresa necesita algo que no está en la lista? Diseñamos la pieza desde cero: exhibidores, repuestos con tu
-        marca, maquetas o piezas técnicas. <a href={wa()} target="_blank" rel="noopener">Cuéntanos la idea</a>. Si lo que buscas es el logo de tu empresa hecho pieza, mira
-        <a href="/logo-3d-empresas">logos 3D para empresas</a>.
+        ¿Buscas otros productos con tu marca, como displays QR, trofeos o welcome packs? Mira todo el
+        <a href="/merchandising-corporativo">merchandising corporativo impreso en 3D</a>.
       </p>
     </div>
   </section>
@@ -266,7 +329,7 @@ const jsonLd = [
     <div class="container">
       <div class="section-head">
         <span class="eyebrow">Por qué en 3D</span>
-        <h2>Qué gana tu empresa frente al merchandising tradicional</h2>
+        <h2>Qué gana tu empresa con un logo impreso en 3D</h2>
       </div>
       <div class="grid grid-4">
         {
@@ -288,8 +351,8 @@ const jsonLd = [
   <section class="section" id="proceso">
     <div class="container">
       <div class="section-head">
-        <span class="eyebrow">Cómo trabajamos</span>
-        <h2>Cómo trabajamos con tu empresa, paso a paso</h2>
+        <span class="eyebrow">Cómo lo hacemos</span>
+        <h2>Cómo hacemos tu logo 3D, en 4 pasos</h2>
       </div>
       <ol class="steps">
         {
@@ -310,8 +373,8 @@ const jsonLd = [
     <div class="container narrow-md">
       <div class="section-head">
         <span class="eyebrow">Precio por volumen</span>
-        <h2>Precio según cantidad</h2>
-        <p>Partimos con lotes chicos y el valor unitario baja a medida que tu empresa pide más. Descuentos referenciales sobre el precio base de cada línea.</p>
+        <h2>Mientras más regalos, menor el precio por unidad</h2>
+        <p>Descuentos referenciales sobre el precio base de cada formato.</p>
       </div>
       <div class="tiers">
         {
@@ -327,27 +390,71 @@ const jsonLd = [
     </div>
   </section>
 
-  <!-- Sectores -->
-  <section class="section">
-    <div class="container">
+  <!-- Logo de escritorio: tamaños y precios -->
+  <section class="section" id="escritorio">
+    <div class="container narrow-md">
       <div class="section-head">
-        <span class="eyebrow">Tipos de empresa</span>
-        <h2>Para qué tipo de empresa funciona mejor</h2>
+        <span class="eyebrow">Logos grandes</span>
+        <h2>¿Necesitas un logo más grande? Escritorio, mesón y stand</h2>
+        <p>
+          Además de los regalos pequeños, fabricamos tu logo en tamaño grande con base propia, para oficina, mesón de
+          atención, vitrina o stand. Son precios por unidad desde 1 pieza; si pides varias, el valor baja según la cantidad.
+        </p>
       </div>
-      <div class="grid grid-3">
+      <div class="sizes">
         {
-          sectors.map((s, i) => (
-            <article class="card sector reveal" style={`transition-delay:${(i % 3) * 70}ms`}>
-              <span class="sector-icon">
-                <Icon name={s.icon} size={20} stroke={1.9} />
-              </span>
-              <div>
-                <h3>{s.name}</h3>
-                <p>{s.text}</p>
-              </div>
-            </article>
+          deskSizes.map((d) => (
+            <div class="card size">
+              <span class="size-name">{d.name}</span>
+              <span class="size-dim">{d.size}</span>
+              <b class="size-price">{clp(d.price)}</b>
+              <span class="size-note">{d.note}</span>
+              <a class="btn btn-outline btn-sm" href={wa(`un logo 3D de escritorio ${d.name.toLowerCase()} (${d.size.toLowerCase()})`)} target="_blank" rel="noopener">
+                Cotizar este tamaño <Icon name="arrow-right" size={16} />
+              </a>
+            </div>
           ))
         }
+      </div>
+      <div class="desk-extra">
+        <div class="card desk-box">
+          <h3>Qué incluye</h3>
+          <ul>
+            {deskIncludes.map((i) => <li><Icon name="check" size={16} /> {i}</li>)}
+          </ul>
+        </div>
+        <div class="card desk-box">
+          <h3>Revisamos tu logo antes de imprimir</h3>
+          <p>
+            Algunos logos tienen líneas muy finas, letras pequeñas o partes que quedarían sueltas. Antes de producir
+            revisamos el diseño y, si hace falta, te proponemos un pequeño ajuste para que la pieza quede firme y se
+            vea bien. Tú apruebas el render y la muestra antes del lote.
+          </p>
+          <p class="desk-care">
+            <b>Cuidado:</b> son piezas para interior. Evita dejarlas al sol directo o cerca de fuentes de calor intenso.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Logo grande -->
+  <section class="section" id="grande">
+    <div class="container big">
+      <div class="big-media">
+        <img src="/empresa/hero-recepcion.webp" alt="Logo de empresa en 3D de gran tamaño sobre el mesón de recepción" width="1920" height="1080" loading="lazy" decoding="async" />
+      </div>
+      <div class="big-body">
+        <span class="eyebrow">Para recepción</span>
+        <h2>Logo gigante para recepción</h2>
+        <p>
+          También fabricamos el logo de tu empresa en tamaño grande para recepción, sala de reuniones o vitrina: de
+          sobremesa con base propia o para montar en pared, de hasta 60 cm de ancho en piezas ensambladas. Se cotiza
+          según tamaño y detalle, desde {clp(49000)}.
+        </p>
+        <a class="btn btn-primary" href={wa('un logo 3D grande para recepción')} target="_blank" rel="noopener">
+          Cotizar logo grande <Icon name="arrow-right" size={18} />
+        </a>
       </div>
     </div>
   </section>
@@ -356,18 +463,17 @@ const jsonLd = [
   <section class="section cta-band" id="cotizar">
     <div class="container cta-inner">
       <div>
-        <span class="eyebrow light">Cotiza sin compromiso</span>
-        <h2>Cuéntanos qué necesita tu empresa y te respondemos hoy</h2>
+        <span class="eyebrow light">Cotiza gratis</span>
+        <h2>Cotiza tu logo 3D</h2>
         <p>
-          Escríbenos con la cantidad aproximada, para qué la necesitas y el logo de tu empresa. Te enviamos precio por
-          unidad, plazo y una vista previa con tu marca aplicada. Si el proyecto avanza, imprimimos una muestra física
-          antes de producir el lote.
+          Escríbenos por WhatsApp con tu logo, la cantidad aproximada y para qué lo necesitas. Te enviamos precio por
+          unidad, plazo y una vista previa con tu marca aplicada.
         </p>
         <div class="cta-actions">
           <a class="btn btn-whatsapp btn-lg" href={wa()} target="_blank" rel="noopener">
             <Icon name="whatsapp" /> Cotizar por WhatsApp
           </a>
-          <a class="btn btn-outline-light btn-lg" href={`mailto:${SITE.email}?subject=Cotización merchandising corporativo 3D`}>
+          <a class="btn btn-outline-light btn-lg" href={`mailto:${SITE.email}?subject=Cotización logo 3D para empresa`}>
             <Icon name="mail" /> Escribir por correo
           </a>
         </div>
@@ -378,14 +484,13 @@ const jsonLd = [
       <aside class="card cta-card">
         <h3>Para cotizar más rápido, ten a mano</h3>
         <ul>
-          <li><Icon name="check" size={16} /> Cantidad aproximada de unidades</li>
-          <li><Icon name="check" size={16} /> Fecha en que las necesitas</li>
-          <li><Icon name="check" size={16} /> Logo de la empresa en SVG, AI o PNG</li>
-          <li><Icon name="check" size={16} /> Colores corporativos</li>
-          <li><Icon name="check" size={16} /> Si necesitas empaque de presentación</li>
+          <li><Icon name="check" size={16} /> Tu logo en SVG, AI, PDF o PNG</li>
+          <li><Icon name="check" size={16} /> Cantidad aproximada</li>
+          <li><Icon name="check" size={16} /> Fecha en que lo necesitas</li>
+          <li><Icon name="check" size={16} /> Colores de tu marca</li>
         </ul>
         <p class="cta-note">
-          ¿Tu empresa aún no define qué producto conviene? Dinos el presupuesto por persona y te proponemos tres alternativas.
+          ¿No sabes qué formato conviene? Dinos tu presupuesto por regalo y te proponemos alternativas.
         </p>
       </aside>
     </div>
@@ -396,7 +501,7 @@ const jsonLd = [
     <div class="container narrow-md">
       <div class="section-head">
         <span class="eyebrow">Preguntas frecuentes</span>
-        <h2>Lo que nos preguntan las empresas</h2>
+        <h2>Preguntas frecuentes sobre logos 3D para empresas</h2>
       </div>
       <div class="faq">
         {
@@ -726,6 +831,115 @@ const jsonLd = [
   .lines-note a {
     color: var(--blue);
     font-weight: 700;
+  }
+
+  /* Logo de escritorio */
+  .sizes {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+  .size {
+    padding: 26px 24px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .size-name {
+    font-weight: 800;
+    font-size: 1.1rem;
+  }
+  .size-dim {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .size-price {
+    margin: 10px 0 6px;
+    font-size: 2rem;
+    letter-spacing: -0.03em;
+    color: var(--blue);
+  }
+  .size-note {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .desk-extra {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-top: 18px;
+  }
+  .desk-box {
+    padding: 24px;
+  }
+  .desk-box h3 {
+    font-size: 1.02rem;
+    margin-bottom: 10px;
+  }
+  .desk-box ul li {
+    display: flex;
+    gap: 9px;
+    align-items: flex-start;
+    font-size: 0.92rem;
+    padding: 7px 0;
+    border-top: 1px dashed var(--border);
+  }
+  .desk-box ul li:first-child {
+    border-top: 0;
+  }
+  .desk-box ul svg {
+    color: var(--success);
+    flex: none;
+    margin-top: 3px;
+  }
+  .desk-box p {
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.65;
+  }
+  .desk-care {
+    margin: 12px 0 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 0.86rem !important;
+  }
+  @media (max-width: 760px) {
+    .sizes,
+    .desk-extra {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Logo grande */
+  .big {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: center;
+  }
+  .big-media img {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+  .big-body p {
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 22px;
+  }
+  @media (max-width: 900px) {
+    .big {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
   }
 
   /* Por qué */
