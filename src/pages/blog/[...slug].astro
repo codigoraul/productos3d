@@ -1,0 +1,174 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHero from '@/components/PageHero.astro';
+import Icon from '@/components/Icon.astro';
+import { SITE, whatsappLink } from '@/config';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', (p) => !p.data.draft);
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const d = post.data;
+const url = `${SITE.url}/blog/${post.id}`;
+const fmt = (x: Date) => x.toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: d.title,
+    description: d.description,
+    datePublished: d.date.toISOString(),
+    dateModified: (d.updated ?? d.date).toISOString(),
+    inLanguage: 'es-CL',
+    mainEntityOfPage: url,
+    image: d.image ? new URL(d.image, SITE.url).href : undefined,
+    author: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+    publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Inicio', item: SITE.url },
+      { '@type': 'ListItem', position: 2, name: 'Blog', item: `${SITE.url}/blog` },
+      { '@type': 'ListItem', position: 3, name: d.title, item: url },
+    ],
+  },
+];
+---
+
+<BaseLayout title={d.title} description={d.description} image={d.image} jsonLd={jsonLd}>
+  <slot name="head" slot="head">
+    <meta property="og:type" content="article" />
+    <meta property="article:published_time" content={d.date.toISOString()} />
+  </slot>
+
+  <PageHero
+    eyebrow="Blog"
+    title={d.title}
+    crumbs={[{ label: 'Blog', href: '/blog' }, { label: d.title }]}
+  >
+    <p class="meta">
+      Publicado el <time datetime={d.date.toISOString()}>{fmt(d.date)}</time>
+      {d.updated && <> · Actualizado el <time datetime={d.updated.toISOString()}>{fmt(d.updated)}</time></>}
+    </p>
+  </PageHero>
+
+  <section class="section">
+    <div class="container narrow">
+      {d.image && <img class="cover" src={d.image} alt={d.imageAlt ?? d.title} width="1200" height="675" />}
+      <article class="prose">
+        <Content />
+      </article>
+
+      <aside class="cta card">
+        <h2>¿Quieres cotizar tu proyecto?</h2>
+        <p>Envíanos tu logo o tu idea y te respondemos con precio y plazo.</p>
+        <a
+          class="btn btn-primary"
+          href={whatsappLink(`Hola, leí el artículo "${d.title}" y quiero cotizar.`)}
+          target="_blank"
+          rel="noopener"
+        >
+          <Icon name="whatsapp" /> Cotizar por WhatsApp
+        </a>
+      </aside>
+
+      <p class="back"><a href="/blog">← Volver al blog</a></p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .narrow {
+    max-width: 780px;
+  }
+  .meta {
+    color: var(--muted);
+    margin: 8px 0 0;
+    font-size: 0.95rem;
+  }
+  .cover {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-lg);
+    margin-bottom: 32px;
+  }
+  .prose {
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: var(--ink-2);
+  }
+  .prose :global(h2) {
+    font-size: 1.6rem;
+    line-height: 1.25;
+    margin: 2.2em 0 0.6em;
+    color: var(--ink);
+  }
+  .prose :global(h3) {
+    font-size: 1.2rem;
+    margin: 1.8em 0 0.5em;
+    color: var(--ink);
+  }
+  .prose :global(p) {
+    margin: 0 0 1.1em;
+  }
+  .prose :global(ul),
+  .prose :global(ol) {
+    margin: 0 0 1.3em;
+    padding-left: 1.3em;
+  }
+  .prose :global(li) {
+    margin-bottom: 0.4em;
+  }
+  .prose :global(a) {
+    color: var(--blue);
+    font-weight: 600;
+  }
+  .prose :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius);
+  }
+  .prose :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 1.4em;
+    font-size: 0.98rem;
+  }
+  .prose :global(th),
+  .prose :global(td) {
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    text-align: left;
+  }
+  .prose :global(th) {
+    background: var(--bg-soft);
+  }
+  .cta {
+    margin-top: 48px;
+    padding: 28px;
+    text-align: center;
+  }
+  .cta h2 {
+    margin: 0 0 8px;
+    font-size: 1.4rem;
+  }
+  .cta p {
+    margin: 0 0 18px;
+    color: var(--ink-2);
+  }
+  .back {
+    margin-top: 28px;
+  }
+  .back a {
+    color: var(--blue);
+    font-weight: 600;
+    text-decoration: none;
+  }
+</style>
