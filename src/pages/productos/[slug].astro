@@ -25,6 +25,8 @@ const seoTitle = seo?.title ?? p.name;
 const seoDescription = seo?.description ?? p.shortDescription;
 const seoImage = seo?.ogImage ?? p.images[0]?.src;
 const onSale = p.regularPrice && p.regularPrice > p.price;
+// Productos corporativos: el precio base es el del tramo más alto en cantidad.
+const fromPrice = p.categories.includes('merchandising-corporativo');
 const wa = whatsappLink(`Hola, quiero pedir "${p.name}" (${formatCLP(p.price)}).`);
 const waCustom = whatsappLink(`Hola, quiero personalizar "${p.name}".`);
 
@@ -79,7 +81,7 @@ const jsonLd = {
 
           <div class="pd-price">
             {onSale && <s>{formatCLP(p.regularPrice!)}</s>}
-            <strong>{formatCLP(p.price)}</strong>
+            <strong>{fromPrice && <small style="font-size:0.5em;font-weight:600;opacity:0.7;margin-right:0.35em;">desde</small>}{formatCLP(p.price)}</strong>
             <span class:list={['pd-stock', { ok: p.inStock }]}>
               <Icon name={p.inStock ? 'check' : 'clock'} size={16} />
               {p.inStock ? 'Disponible · entrega 2 a 4 días hábiles' : 'A pedido · 7 a 10 días hábiles'}

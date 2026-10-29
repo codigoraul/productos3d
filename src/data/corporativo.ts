@@ -69,7 +69,7 @@ export const corpLines: CorpLine[] = [
     icon: 'key',
     name: 'Llaveros corporativos',
     text: 'Entrega masiva en ferias, aniversarios y eventos, con algo que la gente realmente usa.',
-    from: 1490,
+    from: 700,
     unit: 'unidad',
     min: 25,
     bullets: [

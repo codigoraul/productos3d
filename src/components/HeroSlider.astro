@@ -29,7 +29,7 @@ const headlines: Record<string, string> = {
 
 /** Fondos fotográficos por categoría (1920×1080 WebP en public/slider/). */
 const backgrounds: Record<string, string> = {
-  llaveros: '/slider/llaveros-corporativo.webp',
+  llaveros: '/slider/llaveros-claro.webp',
   'soportes-celular': '/slider/soportes-celular.webp',
   anime: '/slider/anime.webp',
   dibujos: '/slider/dibujos.webp',
@@ -37,6 +37,8 @@ const backgrounds: Record<string, string> = {
   personalizados: '/slider/personalizados.webp',
 };
 const fallbackBg = '/slider/personalizados.webp';
+/** Slides con fondo claro: usan textos oscuros y degradado blanco en vez de la sombra oscura. */
+const lightSlides = new Set(['llaveros']);
 ---
 
 <section class="hero" id="hero" aria-roledescription="carrusel" aria-label="Categorías destacadas">
@@ -44,7 +46,7 @@ const fallbackBg = '/slider/personalizados.webp';
     {
       slides.map((s, i) => (
         <article
-          class:list={['slide', { 'is-active': i === 0 }]}
+          class:list={['slide', { 'is-active': i === 0, 'is-light': lightSlides.has(s.slug) }]}
           style={`--c:${s.accent}`}
           data-index={i}
           aria-roledescription="slide"
@@ -184,10 +186,11 @@ const fallbackBg = '/slider/personalizados.webp';
     color: #fff;
     overflow: hidden;
     --interval: 6000ms;
+    --hero-h: 620px;
   }
   .hero-track {
     position: relative;
-    min-height: 560px;
+    min-height: var(--hero-h);
   }
   .slide {
     position: absolute;
@@ -204,6 +207,7 @@ const fallbackBg = '/slider/personalizados.webp';
     opacity: 1;
     visibility: visible;
     position: relative;
+    min-height: var(--hero-h);
   }
 
   /* Fondo fotográfico */
@@ -233,6 +237,39 @@ const fallbackBg = '/slider/personalizados.webp';
     background:
       linear-gradient(90deg, rgba(8, 12, 24, 0.86) 0%, rgba(8, 12, 24, 0.62) 38%, rgba(8, 12, 24, 0.1) 68%, rgba(8, 12, 24, 0) 100%),
       linear-gradient(180deg, rgba(8, 12, 24, 0.25) 0%, rgba(8, 12, 24, 0) 30%, rgba(8, 12, 24, 0) 70%, rgba(8, 12, 24, 0.55) 100%);
+  }
+
+  /* Slide con fondo claro: textos oscuros */
+  .slide.is-light .slide-bg {
+    background: #f4f1ee;
+  }
+  .slide.is-light .slide-img {
+    object-position: 80% center;
+    filter: brightness(0.86) contrast(1.04);
+  }
+  .slide.is-light .slide-shade {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.25) 40%, rgba(255, 255, 255, 0) 65%);
+  }
+  .slide.is-light .slide-kicker {
+    background: rgba(255, 255, 255, 0.75);
+    border-color: rgba(15, 23, 42, 0.12);
+    color: #0f172a;
+  }
+  .slide.is-light .slide-kicker :global(svg) {
+    color: var(--c);
+  }
+  .slide.is-light .slide-title {
+    color: #0f172a;
+    text-shadow: none;
+  }
+  .slide.is-light .slide-desc {
+    color: #334155;
+  }
+  .slide.is-light .slide-from {
+    color: #475569;
+  }
+  .slide.is-light .slide-from b {
+    color: #0f172a;
   }
 
   .slide-inner {
@@ -424,8 +461,8 @@ const fallbackBg = '/slider/personalizados.webp';
       padding-top: 56px;
       padding-bottom: 40px;
     }
-    .hero-track {
-      min-height: 480px;
+    .hero {
+      --hero-h: 560px;
     }
     .slide-img {
       object-position: 78% center;
@@ -434,6 +471,9 @@ const fallbackBg = '/slider/personalizados.webp';
       background:
         linear-gradient(90deg, rgba(8, 12, 24, 0.9) 0%, rgba(8, 12, 24, 0.7) 50%, rgba(8, 12, 24, 0.35) 100%),
         linear-gradient(180deg, rgba(8, 12, 24, 0.3) 0%, rgba(8, 12, 24, 0) 40%, rgba(8, 12, 24, 0.6) 100%);
+    }
+    .slide.is-light .slide-shade {
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.55) 55%, rgba(255, 255, 255, 0.15) 100%);
     }
     .slide-title {
       max-width: none;
@@ -444,8 +484,8 @@ const fallbackBg = '/slider/personalizados.webp';
     }
   }
   @media (max-width: 640px) {
-    .hero-track {
-      min-height: 440px;
+    .hero {
+      --hero-h: 520px;
     }
     .slide-img {
       object-position: 62% center;
@@ -453,6 +493,12 @@ const fallbackBg = '/slider/personalizados.webp';
     .slide-shade {
       background:
         linear-gradient(180deg, rgba(8, 12, 24, 0.55) 0%, rgba(8, 12, 24, 0.45) 45%, rgba(8, 12, 24, 0.85) 100%);
+    }
+    .slide.is-light .slide-shade {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.78) 0%, rgba(255, 255, 255, 0.6) 55%, rgba(255, 255, 255, 0.25) 100%);
+    }
+    .slide.is-light .slide-img {
+      object-position: 72% center;
     }
     .dot-label {
       display: none;
