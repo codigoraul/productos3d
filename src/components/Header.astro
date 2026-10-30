@@ -21,12 +21,12 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
 <header class="header" id="header">
   <div class="topbar">
     <div class="container topbar-inner">
-      <span><Icon name="truck" size={16} /> Envíos a todo Chile</span>
-      <span class="sep"></span>
-      <span><Icon name="zap" size={16} /> Cotización en menos de 24 h</span>
+      <span class="hide-sm"><Icon name="truck" size={16} /> Envíos a todo Chile</span>
+      <span class="sep hide-sm"></span>
+      <span class="hide-sm"><Icon name="zap" size={16} /> Cotización en menos de 24 h</span>
       <span class="sep hide-sm"></span>
       <span class="hide-sm"><Icon name="map-pin" size={16} /> {SITE.city}</span>
-      <span class="sep"></span>
+      <span class="sep hide-sm"></span>
       <a class="topbar-phone" href={SITE.phoneHref}><Icon name="phone" size={16} /> {SITE.phone}</a>
       <span class="sep"></span>
       <a class="topbar-phone" href={SITE.instagram} target="_blank" rel="noopener"><Icon name="instagram" size={16} /> {SITE.instagramHandle}</a>
