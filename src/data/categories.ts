@@ -50,6 +50,22 @@ export const categories: Category[] = [
     icon: 'star',
   },
   {
+    id: 11,
+    slug: 'pokemon',
+    name: 'Pokémon',
+    description: 'Figuras de Pokémon impresas en 3D: tus favoritos para el escritorio, la repisa o para regalar a un fan.',
+    accent: '#7E57C2',
+    icon: 'zap',
+  },
+  {
+    id: 12,
+    slug: 'dragon-ball',
+    name: 'Dragon Ball',
+    description: 'Figuras de Dragon Ball impresas en 3D: Goku y más personajes para tu escritorio, la repisa o tu colección.',
+    accent: '#F57C00',
+    icon: 'star',
+  },
+  {
     id: 8,
     slug: 'fidget-y-juguetes',
     name: 'Fidget y juguetes',
