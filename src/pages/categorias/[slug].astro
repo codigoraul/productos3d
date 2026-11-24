@@ -5,6 +5,7 @@ import CatalogGrid from '@/components/CatalogGrid.astro';
 import Icon from '@/components/Icon.astro';
 import { getCategories, getCategory, getCategoryCounts, getProductsByCategory } from '@/lib/catalog';
 import { getCategorySeo } from '@/lib/seo';
+import { fandomForCategory } from '@/data/fandoms';
 
 export async function getStaticPaths() {
   const categories = await getCategories();
@@ -18,6 +19,8 @@ const counts = await getCategoryCounts();
 const products = await getProductsByCategory(category.slug);
 const others = categories.filter((c) => c.slug !== category.slug);
 const seo = await getCategorySeo(category.id);
+// Si la categoría tiene landing propia, la landing es la página que posiciona.
+const fandom = fandomForCategory(category.slug);
 ---
 
 <BaseLayout
@@ -25,6 +28,7 @@ const seo = await getCategorySeo(category.id);
   description={seo?.description ?? category.description}
   image={seo?.ogImage}
   suffix={!seo?.title}
+  canonicalUrl={fandom ? fandom.path + '/' : undefined}
 >
   <PageHero
     eyebrow={`${products.length} ${products.length === 1 ? 'producto' : 'productos'}`}
@@ -46,12 +50,27 @@ const seo = await getCategorySeo(category.id);
 
   <section class="section-sm">
     <div class="container">
+      {
+        fandom && (
+          <a href={fandom.path} class="fandom-link">
+            Ver la colección completa de figuras {fandom.of} <Icon name="arrow-right" size={16} />
+          </a>
+        )
+      }
       <CatalogGrid products={products} categories={categories} counts={counts} lockedCategory={category.slug} />
     </div>
   </section>
 </BaseLayout>
 
 <style>
+  .fandom-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 22px;
+    font-weight: 700;
+    color: var(--blue);
+  }
   .others {
     display: flex;
     gap: 8px;

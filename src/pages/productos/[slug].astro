@@ -7,6 +7,7 @@ import { formatCLP } from '@/lib/format';
 import { SITE, whatsappLink } from '@/config';
 import { getCategories, getProduct, getProducts, getRelatedProducts } from '@/lib/catalog';
 import { getProductSeo } from '@/lib/seo';
+import { fandomForProduct } from '@/data/fandoms';
 
 export async function getStaticPaths() {
   const products = await getProducts();
@@ -25,8 +26,15 @@ const seoTitle = seo?.title ?? p.name;
 const seoDescription = seo?.description ?? p.shortDescription;
 const seoImage = seo?.ogImage ?? p.images[0]?.src;
 const onSale = p.regularPrice && p.regularPrice > p.price;
+const fandom = fandomForProduct(p);
 // Productos corporativos: el precio base es el del tramo más alto en cantidad.
 const fromPrice = p.categories.includes('merchandising-corporativo');
+// Aclaración bajo el precio: de qué cantidad es el precio mostrado.
+const tierNotes: Record<string, string> = {
+  'llaveros-corporativos-personalizados':
+    '$700 por unidad con 100 o más · 50 a 99 unidades $900 · 25 a 49 unidades $1.100 (mínimo 25 unidades)',
+};
+const tierNote = tierNotes[p.slug];
 const wa = whatsappLink(`Hola, quiero pedir "${p.name}" (${formatCLP(p.price)}).`);
 const waCustom = whatsappLink(`Hola, quiero personalizar "${p.name}".`);
 
@@ -78,15 +86,24 @@ const jsonLd = {
           </div>
           <h1>{p.name}</h1>
           <p class="pd-short">{p.shortDescription}</p>
+          {
+            fandom && (
+              <p style="margin:-6px 0 16px;font-weight:600;">
+                <a href={fandom.path}>Ver todas las figuras {fandom.of} →</a>
+              </p>
+            )
+          }
 
           <div class="pd-price">
             {onSale && <s>{formatCLP(p.regularPrice!)}</s>}
             <strong>{fromPrice && <small style="font-size:0.5em;font-weight:600;opacity:0.7;margin-right:0.35em;">desde</small>}{formatCLP(p.price)}</strong>
             <span class:list={['pd-stock', { ok: p.inStock }]}>
               <Icon name={p.inStock ? 'check' : 'clock'} size={16} />
-              {p.inStock ? 'Disponible · entrega 2 a 4 días hábiles' : 'A pedido · 7 a 10 días hábiles'}
+              {p.inStock ? 'Disponible · entrega 4 a 10 días hábiles' : 'A pedido · 7 a 10 días hábiles'}
             </span>
           </div>
+
+          {tierNote && <p style="margin:-4px 0 18px;font-size:0.92rem;font-weight:600;color:#475569;">{tierNote}</p>}
 
           <div class="pd-actions">
             <a href={wa} target="_blank" rel="noopener" class="btn btn-whatsapp btn-lg"><Icon name="whatsapp" /> Pedir por WhatsApp</a>

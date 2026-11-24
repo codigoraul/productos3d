@@ -1,0 +1,768 @@
+---
+/**
+ * Plantilla de landing por franquicia (Dragon Ball, Pokémon, estilo Funko Pop).
+ * Los textos viven en src/data/fandoms.ts; los productos salen de WooCommerce.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Icon from '@/components/Icon.astro';
+import ProductCard from '@/components/ProductCard.astro';
+import { SITE, whatsappLink } from '@/config';
+import { getProducts } from '@/lib/catalog';
+import { formatCLP } from '@/lib/format';
+import { fandoms, type Fandom } from '@/data/fandoms';
+
+interface Props {
+  fandom: Fandom;
+}
+const { fandom: f } = Astro.props;
+
+const all = await getProducts();
+const products = all.filter(
+  (p) => f.categories.some((c) => p.categories.includes(c)) || (f.nameMatch ? f.nameMatch.test(p.name) : false),
+);
+const minPrice = products.length ? Math.min(...products.map((p) => p.price)) : 0;
+const heroImg = products.find((p) => p.images.length)?.images[0];
+const others = fandoms.filter((o) => o.path !== f.path);
+const t = f.theme;
+const themeStyle = t ? `--c:${f.accent};--hero-bg:${t.heroBg};--glow:${t.glow}` : `--c:${f.accent}`;
+
+const wa = (msg = 'Quiero hacer un pedido.') => whatsappLink(f.waBase + msg);
+const url = (path: string) => new URL(path + '/', SITE.url).href;
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: f.h1,
+    description: f.seoDescription,
+    url: url(f.path),
+    inLanguage: 'es-CL',
+    isPartOf: { '@type': 'WebSite', name: SITE.name, url: SITE.url },
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: products.length,
+      itemListElement: products.map((p, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        url: url(`/productos/${p.slug}`),
+        name: p.name,
+      })),
+    },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Inicio', item: SITE.url + '/' },
+      { '@type': 'ListItem', position: 2, name: 'Figuras', item: url('/categorias/figuras') },
+      { '@type': 'ListItem', position: 3, name: f.h1, item: url(f.path) },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: f.faqs.map((x) => ({ '@type': 'Question', name: x.q, acceptedAnswer: { '@type': 'Answer', text: x.a } })),
+  },
+];
+---
+
+<BaseLayout title={f.seoTitle} description={f.seoDescription} image={heroImg?.src} suffix={false} jsonLd={jsonLd}>
+  <section class:list={['fl-hero', { themed: !!t }]} style={themeStyle}>
+    {
+      t && (
+        <div class="fl-deco" aria-hidden="true">
+          <svg class="bolt b1" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" /></svg>
+          <svg class="bolt b2" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" /></svg>
+          <svg class="bolt b3" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" /></svg>
+          <span class="spark s1"></span><span class="spark s2"></span><span class="spark s3"></span><span class="spark s4"></span>
+        </div>
+      )
+    }
+    <div class="container fl-hero-grid">
+      <div class="fl-hero-text">
+        <nav class="fl-crumbs" aria-label="Migas de pan">
+          <a href="/">Inicio</a> <span>/</span> <a href="/categorias/figuras">Figuras</a> <span>/</span>
+          <span aria-current="page">{f.short}</span>
+        </nav>
+        <p class="eyebrow">{f.eyebrow}</p>
+        <h1>{f.h1}</h1>
+        <p class="fl-lead">{f.lead}</p>
+        <div class="fl-ctas">
+          <a href="#figuras" class="btn btn-primary btn-lg"><Icon name="eye" /> Ver figuras</a>
+          <a href={wa()} target="_blank" rel="noopener" class="btn btn-whatsapp btn-lg"><Icon name="whatsapp" /> Pedir por WhatsApp</a>
+        </div>
+        <ul class="fl-trust">
+          {minPrice > 0 && <li><Icon name="star" size={18} /> Desde {formatCLP(minPrice)}</li>}
+          <li><Icon name="clock" size={18} /> 4 a 10 días hábiles</li>
+          <li><Icon name="truck" size={18} /> Envío a todo Chile</li>
+          <li><Icon name="printer" size={18} /> Hechas en Temuco</li>
+        </ul>
+      </div>
+      {
+        t?.cutout ? (
+          <div class="fl-stage">
+            <span class="ring r1" /><span class="ring r2" /><span class="ring r3" />
+            {t.extras?.map((x) => (
+              <img class="extra" src={x.src} alt={x.alt} width={x.width} height={x.height} loading="eager" style={`left:${x.left}%;height:${x.size}%;z-index:${x.z ?? 1}`} />
+            ))}
+            <img class="main" src={t.cutout.src} alt={t.cutout.alt} width={t.cutout.width} height={t.cutout.height} loading="eager" fetchpriority="high" />
+            <span class="floor" />
+          </div>
+        ) : heroImg && (
+          <div class="fl-hero-media">
+            <img src={heroImg.src} alt={heroImg.alt || f.h1} width="600" height="800" loading="eager" fetchpriority="high" />
+          </div>
+        )
+      }
+    </div>
+  </section>
+
+  <section class="section" id="figuras">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Catálogo</p>
+        <h2>{f.catalogTitle}</h2>
+        <p>Precio por figura. Toca una para ver fotos, tamaño y colores, o pídela directo por WhatsApp.</p>
+      </div>
+      {
+        products.length > 0 ? (
+          <div class="fl-grid">
+            {products.map((p) => (
+              <ProductCard product={p} />
+            ))}
+          </div>
+        ) : (
+          <p class="text-center text-muted">
+            Estamos sumando figuras. <a href={wa('¿Qué figuras tienen disponibles?')} target="_blank" rel="noopener">Pregúntanos por WhatsApp</a>.
+          </p>
+        )
+      }
+    </div>
+  </section>
+
+  {
+    f.promo && (
+      <section class="section bg-soft">
+        <div class="container fl-promo">
+          <div>
+            <p class="eyebrow">{f.promo.eyebrow}</p>
+            <h2>{f.promo.title}</h2>
+            <p>{f.promo.text}</p>
+            <ul>
+              {f.promo.bullets.map((b) => (
+                <li><Icon name="check" size={18} /> {b}</li>
+              ))}
+            </ul>
+            {f.promo.price && <p class="fl-promo-price"><small>Desde</small>{f.promo.price}</p>}
+            <div class="fl-ctas" style="margin:0">
+              <a href={f.promo.href} class="btn btn-primary btn-lg"><Icon name="eye" /> {f.promo.cta}</a>
+              <a href={wa('Quiero un Funko personalizado con mi foto.')} target="_blank" rel="noopener" class="btn btn-whatsapp btn-lg"><Icon name="whatsapp" /> Enviar mi foto</a>
+            </div>
+          </div>
+          <div class="fl-promo-imgs">
+            {f.promo.images.map((i) => <img src={i.src} alt={i.alt} width="400" height="400" loading="lazy" />)}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <section class:list={['section', f.promo ? '' : 'bg-soft']}>
+    <div class="container fl-intro">
+      <h2>{f.intro.title}</h2>
+      {f.intro.paragraphs.map((t) => <p>{t}</p>)}
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Para quién</p>
+        <h2>Ideales para</h2>
+      </div>
+      <div class="fl-uses">
+        {
+          f.uses.map((u) => (
+            <div class="card fl-use">
+              <span class="fl-ico" style={`--c:${f.accent}`}><Icon name={u.icon} size={22} /></span>
+              <h3>{u.title}</h3>
+              <p>{u.text}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-soft">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">A pedido</p>
+        <h2>{f.characters.title}</h2>
+        <p>{f.characters.text}</p>
+      </div>
+      <div class="fl-chars">
+        {
+          f.characters.items.map((c) => {
+            const ty = t?.types?.[c];
+            return (
+              <a href={wa(`¿Pueden imprimir una figura de ${c}?`)} target="_blank" rel="noopener" class:list={['chip', { typed: !!ty }]} style={ty ? `--ty:${ty.color}` : undefined}>
+                {ty ? <span class="ty">{ty.label}</span> : <Icon name="whatsapp" size={16} />} Figura de {c}
+              </a>
+            );
+          })
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Cómo pedir</p>
+        <h2>Tu figura en 3 pasos</h2>
+      </div>
+      <ol class="fl-steps">
+        <li><strong>Elige tu figura</strong><span>Del catálogo de arriba o pídenos el personaje que buscas.</span></li>
+        <li><strong>Escríbenos por WhatsApp</strong><span>Te confirmamos precio, tamaño, colores, plazo y costo de envío.</span></li>
+        <li><strong>La imprimimos y la enviamos</strong><span>En 4 a 10 días hábiles queda lista y la despachamos a tu ciudad.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section bg-soft" id="faq">
+    <div class="container fl-faq">
+      <div class="section-head">
+        <p class="eyebrow">Preguntas frecuentes</p>
+        <h2>Lo que más nos preguntan</h2>
+      </div>
+      {
+        f.faqs.map((x) => (
+          <details>
+            <summary>{x.q}<Icon name="chevron-down" size={18} /></summary>
+            <p>{x.a}</p>
+          </details>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class:list={['fl-cta', { themed: !!t }]} style={themeStyle}>
+        <div>
+          <h2>{f.ctaTitle}</h2>
+          <p>{f.ctaText}</p>
+        </div>
+        <a href={wa()} target="_blank" rel="noopener" class="btn btn-whatsapp btn-lg"><Icon name="whatsapp" /> Escribir por WhatsApp</a>
+      </div>
+      <nav class="fl-related" aria-label="Otras colecciones">
+        <span>Mira también:</span>
+        {others.map((o) => <a href={o.path} class="chip">Figuras {o.of}</a>)}
+        <a href="/categorias/figuras" class="chip">Todas las figuras</a>
+      </nav>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* ---------- Tema (hero oscuro con escenario) ---------- */
+  .fl-hero.themed {
+    position: relative;
+    background: var(--hero-bg);
+    color: #fff;
+    padding: 48px 0 72px;
+    isolation: isolate;
+  }
+  .fl-hero.themed::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1.2px, transparent 1.3px);
+    background-size: 22px 22px;
+    -webkit-mask-image: linear-gradient(100deg, #000 0%, transparent 55%);
+    mask-image: linear-gradient(100deg, #000 0%, transparent 55%);
+  }
+  .fl-hero.themed h1,
+  .fl-hero.themed .fl-lead,
+  .fl-hero.themed .fl-trust,
+  .fl-hero.themed .fl-crumbs [aria-current] {
+    color: #fff;
+  }
+  .fl-hero.themed .fl-lead {
+    opacity: 0.88;
+  }
+  .fl-hero.themed .fl-crumbs,
+  .fl-hero.themed .fl-crumbs a {
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .fl-hero.themed :global(.eyebrow) {
+    color: #fde047;
+  }
+  .fl-hero.themed :global(.eyebrow::before) {
+    background: #fde047;
+  }
+  .fl-hero.themed .fl-trust :global(svg) {
+    color: #fde047;
+  }
+  .fl-hero.themed .fl-trust li {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    padding: 7px 12px;
+    border-radius: var(--radius-pill);
+    backdrop-filter: blur(4px);
+  }
+  .fl-deco {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .bolt {
+    position: absolute;
+    fill: #fde047;
+    filter: drop-shadow(0 0 12px rgba(253, 224, 71, 0.6));
+    opacity: 0.9;
+  }
+  .b1 { width: 46px; top: 14%; right: 8%; transform: rotate(14deg); }
+  .b2 { width: 26px; bottom: 18%; right: 40%; transform: rotate(-18deg); opacity: 0.6; }
+  .b3 { width: 34px; top: 10%; left: 46%; transform: rotate(8deg); opacity: 0.45; }
+  .spark {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 14px 4px var(--glow);
+    animation: twinkle 3.2s ease-in-out infinite;
+  }
+  .s1 { top: 22%; right: 28%; }
+  .s2 { top: 64%; right: 6%; animation-delay: 0.8s; }
+  .s3 { bottom: 12%; left: 8%; animation-delay: 1.6s; width: 6px; height: 6px; }
+  .s4 { top: 8%; left: 18%; animation-delay: 2.2s; width: 5px; height: 5px; }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.25; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+  .fl-stage {
+    position: relative;
+    justify-self: center;
+    width: min(100%, 460px);
+    height: clamp(300px, 42vw, 540px);
+    display: grid;
+    place-items: end center;
+  }
+  @media (max-width: 899px) {
+    .fl-stage {
+      order: -1;
+      height: 320px;
+      margin-bottom: -8px;
+    }
+    .b2,
+    .b3,
+    .s1,
+    .s4 {
+      display: none;
+    }
+    .b1 {
+      width: 34px;
+      top: 6%;
+      right: 6%;
+    }
+  }
+  .ring {
+    position: absolute;
+    left: 50%;
+    top: 46%;
+    border-radius: 50%;
+    translate: -50% -50%;
+    border: 2px solid color-mix(in srgb, var(--glow) 55%, transparent);
+  }
+  .r1 { width: 92%; aspect-ratio: 1; background: radial-gradient(circle, color-mix(in srgb, var(--glow) 35%, transparent) 0%, transparent 65%); }
+  .r2 { width: 70%; aspect-ratio: 1; border-style: dashed; animation: spin 40s linear infinite; }
+  .r3 { width: 48%; aspect-ratio: 1; border-color: rgba(253, 224, 71, 0.55); }
+  @keyframes spin {
+    to { rotate: 360deg; }
+  }
+  .fl-stage img.main {
+    position: absolute;
+    z-index: 2;
+    bottom: 4%;
+    left: 50%;
+    translate: -50% 0;
+    height: 90%;
+    width: auto;
+    max-width: 85%;
+    object-fit: contain;
+    filter: drop-shadow(0 24px 30px rgba(10, 4, 40, 0.55));
+    animation: float 6s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  .floor {
+    position: absolute;
+    bottom: 2%;
+    left: 50%;
+    translate: -50% 0;
+    width: 70%;
+    height: 34px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(253, 224, 71, 0.55), transparent);
+    filter: blur(4px);
+    z-index: 1;
+  }
+  .fl-stage img.extra {
+    position: absolute;
+    bottom: 3%;
+    width: auto;
+    max-width: 34%;
+    object-fit: contain;
+    filter: drop-shadow(0 18px 22px rgba(10, 4, 40, 0.5));
+    animation: float 7s ease-in-out infinite;
+    animation-delay: -2s;
+  }
+  .fl-stage:has(.extra) img.main {
+    height: 82%;
+    z-index: 3;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .spark, .r2, .fl-stage img { animation: none; }
+  }
+  /* ---------- Bloque destacado ---------- */
+  .fl-promo {
+    display: grid;
+    gap: 36px;
+    align-items: center;
+  }
+  @media (min-width: 900px) {
+    .fl-promo {
+      grid-template-columns: 1fr 1.1fr;
+      gap: 56px;
+    }
+  }
+  .fl-promo h2 {
+    margin: 6px 0 12px;
+  }
+  .fl-promo > div > p {
+    color: var(--ink-2);
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+  .fl-promo ul {
+    list-style: none;
+    padding: 0;
+    margin: 18px 0 24px;
+    display: grid;
+    gap: 10px;
+  }
+  .fl-promo li {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-weight: 600;
+  }
+  .fl-promo li :global(svg) {
+    color: var(--success);
+    flex: none;
+  }
+  .fl-promo > div > p.fl-promo-price {
+    color: var(--ink);
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin: 0 0 16px;
+  }
+  .fl-promo-price small {
+    font-size: 0.55em;
+    font-weight: 600;
+    color: var(--muted);
+    margin-right: 6px;
+  }
+  .fl-promo-imgs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .fl-promo-imgs img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    background: var(--bg-soft);
+  }
+  .fl-promo-imgs img:nth-child(2) {
+    transform: translateY(-18px);
+  }
+  .chip.typed {
+    gap: 8px;
+    border-color: color-mix(in srgb, var(--ty) 40%, var(--border));
+  }
+  .chip.typed:hover {
+    border-color: var(--ty);
+    background: color-mix(in srgb, var(--ty) 10%, #fff);
+  }
+  .ty {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--ty);
+    padding: 3px 8px;
+    border-radius: var(--radius-pill);
+  }
+  .fl-cta.themed {
+    background: var(--hero-bg);
+  }
+  .fl-hero {
+    background:
+      radial-gradient(circle at 85% 30%, color-mix(in srgb, var(--c) 22%, transparent), transparent 55%),
+      var(--bg-soft);
+    padding: 40px 0 56px;
+    overflow: hidden;
+  }
+  .fl-hero-grid {
+    display: grid;
+    gap: 32px;
+    align-items: center;
+  }
+  @media (min-width: 900px) {
+    .fl-hero-grid {
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 48px;
+    }
+  }
+  .fl-crumbs {
+    font-size: 0.88rem;
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+  .fl-crumbs a {
+    color: var(--muted);
+  }
+  .fl-crumbs a:hover {
+    color: var(--blue);
+  }
+  .fl-crumbs span {
+    margin: 0 4px;
+  }
+  .fl-crumbs [aria-current] {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .fl-hero h1 {
+    font-size: clamp(2rem, 4.6vw, 3.3rem);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    margin: 6px 0 16px;
+  }
+  .fl-lead {
+    font-size: 1.12rem;
+    color: var(--ink-2);
+    max-width: 58ch;
+  }
+  .fl-ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 26px 0 22px;
+  }
+  .fl-trust {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+    color: var(--ink-2);
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .fl-trust li {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .fl-trust :global(svg) {
+    color: var(--c);
+  }
+  .fl-hero-media {
+    position: relative;
+    justify-self: center;
+    width: min(100%, 420px);
+  }
+  .fl-hero-media::before {
+    content: '';
+    position: absolute;
+    inset: 8% 4% 0;
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--c) 16%, #fff);
+    transform: rotate(-3deg);
+  }
+  .fl-hero-media img {
+    position: relative;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+  }
+  .fl-grid {
+    display: grid;
+    gap: 22px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 290px));
+    justify-content: center;
+  }
+  .fl-intro {
+    max-width: 820px;
+  }
+  .fl-intro h2 {
+    margin-bottom: 14px;
+  }
+  .fl-intro p {
+    color: var(--ink-2);
+    font-size: 1.05rem;
+    line-height: 1.75;
+    margin: 0 0 14px;
+  }
+  .fl-uses {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  }
+  .fl-use {
+    padding: 24px;
+  }
+  .fl-use h3 {
+    font-size: 1.08rem;
+    margin: 14px 0 6px;
+  }
+  .fl-use p {
+    color: var(--muted);
+    margin: 0;
+  }
+  .fl-ico {
+    display: inline-grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    color: var(--c);
+    background: color-mix(in srgb, var(--c) 14%, #fff);
+  }
+  .fl-chars {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+  }
+  .fl-steps {
+    list-style: none;
+    counter-reset: s;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 18px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+  .fl-steps li {
+    counter-increment: s;
+    position: relative;
+    padding: 24px 24px 24px 76px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+  }
+  .fl-steps li::before {
+    content: counter(s);
+    position: absolute;
+    left: 22px;
+    top: 22px;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--blue);
+    color: #fff;
+    font-weight: 800;
+  }
+  .fl-steps strong {
+    display: block;
+    margin-bottom: 4px;
+  }
+  .fl-steps span {
+    color: var(--muted);
+  }
+  .fl-faq {
+    max-width: 860px;
+  }
+  .fl-faq details {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+  }
+  .fl-faq summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 20px;
+    font-weight: 700;
+  }
+  .fl-faq summary::-webkit-details-marker {
+    display: none;
+  }
+  .fl-faq summary :global(svg) {
+    flex: none;
+    transition: transform 0.2s var(--ease);
+  }
+  .fl-faq details[open] summary :global(svg) {
+    transform: rotate(180deg);
+  }
+  .fl-faq details p {
+    margin: 0;
+    padding: 0 20px 18px;
+    color: var(--ink-2);
+    line-height: 1.7;
+  }
+  .fl-cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 36px;
+    border-radius: var(--radius-lg);
+    color: #fff;
+    background: linear-gradient(135deg, var(--ink), color-mix(in srgb, var(--c) 55%, var(--ink)));
+  }
+  .fl-cta h2 {
+    color: #fff;
+    margin: 0 0 6px;
+  }
+  .fl-cta p {
+    margin: 0;
+    opacity: 0.85;
+  }
+  .fl-related {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 28px;
+  }
+  .fl-related span {
+    color: var(--muted);
+    font-weight: 600;
+  }
+</style>

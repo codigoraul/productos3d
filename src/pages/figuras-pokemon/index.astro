@@ -1,0 +1,8 @@
+---
+import FandomLanding from '@/components/FandomLanding.astro';
+import { fandoms } from '@/data/fandoms';
+
+const fandom = fandoms.find((f) => f.path === '/figuras-pokemon')!;
+---
+
+<FandomLanding fandom={fandom} />
